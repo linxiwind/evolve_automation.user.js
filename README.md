@@ -1,10 +1,16 @@
-游戏Evolve（地址：https://pmotschmann.github.io/Evolve/ ）的自动化脚本，已汉化
+# evolve_automation.user.js
 
-This script forked from Vollch's script version 3.3.1.102. Original script: https://gist.github.com/Vollch/b1a5eec305558a48b7f4575d317d7dd1
+游戏[Evolve](https://pmotschmann.github.io/Evolve/)的自动化脚本，已汉化
+
+[点此安装](https://github.com/linxiwind/evolve_automation.user.js/raw/main/evolve_automation.user.js)
+
+脚本翻译自Vollch's script version 3.3.1.102. Original script: https://gist.github.com/Vollch/b1a5eec305558a48b7f4575d317d7dd1
+
+### 脚本原说明
 
 Most of script options have tooltips, explaining what they do, read them if you have a questions.
 
-Here's some tips about non-intuitive features:
+ Here's some tips about non-intuitive features:
 
     Ctrl+Click on almost any script option brings up advanced configurations, which allows to overide setting under certain conditions and set more advanced logic.
     
