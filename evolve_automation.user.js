@@ -8,13 +8,14 @@
 // @author       Fafnir
 // @author       TMVictor
 // @author       Vollch
+// @author       linxiwind
 // @match        https://pmotschmann.github.io/Evolve/
 // @grant        none
 // @require      https://code.jquery.com/jquery-3.6.0.min.js
 // @require      https://code.jquery.com/ui/1.12.1/jquery-ui.min.js
 // ==/UserScript==
 //
-// This script forked from TMVictor's script version 3.3.1. Original script: https://gist.github.com/TMVictor/3f24e27a21215414ddc68842057482da
+// This script forked from Vollch's script version 3.3.1.102. Original script: https://gist.github.com/Vollch/b1a5eec305558a48b7f4575d317d7dd1
 //
 // Most of script options have tooltips, explaining what they do, read them if you have a questions.
 //
@@ -46,6 +47,7 @@
 
 (function($) {
     'use strict';
+    var translateFinish = false;
     var settingsRaw = JSON.parse(localStorage.getItem('settings')) ?? {};
     var settings = {};
     var game = null;
@@ -1187,6 +1189,13 @@
         }
 
         get name() {
+            //可能冲突，特殊科技手动命名
+            let speciNames = {'alt_fanaticism':"狂热信仰（超越）",'alt_anthropology':"人类学（超越）",'lodge':"狩猎小屋（食肉动物）"};
+            if(speciNames[this._id])
+            {
+                return speciNames[this._id];
+            }
+           //
             return this.title;
         }
 
@@ -1442,27 +1451,27 @@
 
         getCondition() {
             if (this.id === "junker") {
-                return "Genetic Dead End unlocked";
+                return "解锁遗传绝境剧情模式";
             }
             if (this.id === "sludge") {
-                return "Failed Experiment unlocked";
+                return "解锁实验失败挑战";
             }
 
             switch (this.genus) {
                 case "aquatic":
-                    return "Oceanic or Swamp planet";
+                    return "海洋或沼泽星球";
                 case "fey":
-                    return "Forest, Swamp or Taiga planet";
+                    return "森林、沼泽或针叶林星球";
                 case "sand":
-                    return "Ashland or Desert planet";
+                    return "灰幕或沙漠星球";
                 case "heat":
-                    return "Ashland or Volcanic planet";
+                    return "灰幕或火山星球";
                 case "polar":
-                    return "Tundra or Taiga planet";
+                    return "苔原或针叶林星球";
                 case "demonic":
-                    return "Hellscape planet";
+                    return "地狱星球";
                 case "angelic":
-                    return "Eden planet";
+                    return "伊甸星球";
                 case "synthetic":
                     return game.loc('achieve_obsolete_desc');
                 case undefined: // Nonexistent custom
@@ -1721,7 +1730,7 @@
     ];
     const governors = ["soldier", "criminal", "entrepreneur", "educator", "spiritual", "bluecollar", "noble", "media", "sports", "bureaucrat"];
     const evolutionSettingsToStore = ["userEvolutionTarget", "prestigeType", ...challenges.map(c => "challenge_" + c[0].id)];
-    const prestigeNames = {mad: "MAD", bioseed: "Bioseed", cataclysm: "Cataclysm", vacuum: "Vacuum", whitehole: "Whitehole", apocalypse: "AI Apocalypse", ascension: "Ascension", demonic: "Infusion"};
+    const prestigeNames = {mad: "核爆重置", bioseed: "播种重置", cataclysm: "大灾变重置", vacuum: "真空坍缩", whitehole: "黑洞重置", apocalypse: "人工智能觉醒", ascension: "飞升重置", demonic: "恶魔灌注"};
     const logIgnore = ["food", "lumber", "stone", "chrysotile", "slaughter", "s_alter", "slave_market", "horseshoe", "assembly"];
     const galaxyRegions = ["gxy_stargate", "gxy_gateway", "gxy_gorddon", "gxy_alien1", "gxy_alien2", "gxy_chthonian"];
     const settingsSections = ["toggle", "general", "prestige", "evolution", "research", "market", "storage", "production", "war", "hell", "fleet", "job", "building", "project", "government", "logging", "minorTrait", "weighting", "ejector", "planet", "mech", "magic"];
@@ -1786,7 +1795,7 @@
 
         // Base resources
         Money: new Resource("Money", "Money"),
-        Population: new Population("Population", "Population"), // We can't store the full elementId because we don't know the name of the population node until later
+        Population: new Population("人口", "Population"), // We can't store the full elementId because we don't know the name of the population node until later
         Slave: new Resource("Slave", "Slave"),
         Mana: new Resource("Mana", "Mana"),
         Knowledge: new Resource("Knowledge", "Knowledge"),
@@ -1855,7 +1864,7 @@
         Blood_Stone: new Resource("Blood Stone", "Blood_Stone"),
         Artifact: new Resource("Artifact", "Artifact"),
         Plasmid: new SpecialResource("Plasmid", "Plasmid"),
-        Antiplasmid: new AntiPlasmid("Anti-Plasmid", "Antiplasmid"),
+        Antiplasmid: new AntiPlasmid("反质粒", "Antiplasmid"),
         Phage: new SpecialResource("Phage", "Phage"),
         Dark: new SpecialResource("Dark", "Dark"),
         Harmony: new SpecialResource("Harmony", "Harmony"),
@@ -1863,59 +1872,59 @@
 
         // Special not-really-resources-but-we'll-treat-them-like-resources resources
         Supply: new Supply("Supplies", "Supply"),
-        Power: new Power("Power", "Power"),
-        StarPower: new StarPower("Star Power", "StarPower"),
-        Morale: new Morale("Morale", "Morale"),
-        Moon_Support: new Support("Moon Support", "Moon_Support", "space", "spc_moon"),
-        Red_Support: new Support("Red Support", "Red_Support", "space", "spc_red"),
-        Sun_Support: new Support("Sun Support", "Sun_Support", "space", "spc_sun"),
-        Belt_Support: new BeltSupport("Belt Support", "Belt_Support", "space", "spc_belt"),
-        Titan_Support: new Support("Titan Support", "Titan_Support", "space", "spc_titan"),
-        Electrolysis_Support: new ElectrolysisSupport("Electrolysis Plant", "Electrolysis_Support", "", ""),
-        Enceladus_Support: new Support("Enceladus Support", "Enceladus_Support", "space", "spc_enceladus"),
-        Eris_Support: new Support("Eris Support", "Eris_Support", "space", "spc_eris"),
-        Alpha_Support: new Support("Alpha Support", "Alpha_Support", "interstellar", "int_alpha"),
-        Nebula_Support: new Support("Nebula Support", "Nebula_Support", "interstellar", "int_nebula"),
-        Gateway_Support: new Support("Gateway Support", "Gateway_Support", "galaxy", "gxy_gateway"),
-        Alien_Support: new Support("Alien Support", "Alien_Support", "galaxy", "gxy_alien2"),
-        Lake_Support: new Support("Lake Support", "Lake_Support", "portal", "prtl_lake"),
-        Spire_Support: new Support("Spire Support", "Spire_Support", "portal", "prtl_spire"),
+        Power: new Power("电力", "Power"),
+        StarPower: new StarPower("星辰", "StarPower"),
+        Morale: new Morale("士气", "Morale"),
+        Moon_Support: new Support("月球支持", "Moon_Support", "space", "spc_moon"),
+        Red_Support: new Support("火星（Mars）支持", "Red_Support", "space", "spc_red"),
+        Sun_Support: new Support("蜂群支持", "Sun_Support", "space", "spc_sun"),
+        Belt_Support: new BeltSupport("小行星带支持", "Belt_Support", "space", "spc_belt"),
+        Titan_Support: new Support("土卫六（Titan）支持", "Titan_Support", "space", "spc_titan"),
+        Electrolysis_Support: new ElectrolysisSupport("电解工厂", "Electrolysis_Support", "", ""),
+        Enceladus_Support: new Support("土卫二（Enceladus）支持", "Enceladus_Support", "space", "spc_enceladus"),
+        Eris_Support: new Support("阋神星（Eris）支持", "Eris_Support", "space", "spc_eris"),
+        Alpha_Support: new Support("半人马座α星系支持", "Alpha_Support", "interstellar", "int_alpha"),
+        Nebula_Support: new Support("螺旋星云支持", "Nebula_Support", "interstellar", "int_nebula"),
+        Gateway_Support: new Support("星门支持", "Gateway_Support", "galaxy", "gxy_gateway"),
+        Alien_Support: new Support("第五星系支持", "Alien_Support", "galaxy", "gxy_alien2"),
+        Lake_Support: new Support("湖泊支持", "Lake_Support", "portal", "prtl_lake"),
+        Spire_Support: new Support("尖塔支持", "Spire_Support", "portal", "prtl_spire"),
     }
 
     var jobs = {
-        Unemployed: new Job("unemployed", "Unemployed"),
-        Hunter: new Job("hunter", "Hunter"),
-        Farmer: new Job("farmer", "Farmer"),
+        Unemployed: new Job("unemployed", "失业人口"),
+        Hunter: new Job("hunter", "猎人"),
+        Farmer: new Job("farmer", "农民"),
         //Forager: new Job("forager", "Forager"),
-        Lumberjack: new Job("lumberjack", "Lumberjack"),
-        QuarryWorker: new Job("quarry_worker", "Quarry Worker"),
-        CrystalMiner: new Job("crystal_miner", "Crystal Miner"),
-        Scavenger: new Job("scavenger", "Scavenger"),
+        Lumberjack: new Job("lumberjack", "伐木工人"),
+        QuarryWorker: new Job("quarry_worker", "石工"),
+        CrystalMiner: new Job("crystal_miner", "水晶矿工"),
+        Scavenger: new Job("scavenger", "拾荒者"),
 
-        Colonist: new Job("colonist", "Colonist"),
-        TitanColonist: new Job("titan_colonist", "Titan Colonist"),
-        Miner: new Job("miner", "Miner"),
-        CoalMiner: new Job("coal_miner", "Coal Miner"),
-        CementWorker: new Job("cement_worker", "Cement Worker"),
-        Professor: new Job("professor", "Professor"),
-        Scientist: new Job("scientist", "Scientist"),
-        Entertainer: new Job("entertainer", "Entertainer"),
-        HellSurveyor: new Job("hell_surveyor", "Hell Surveyor"),
-        SpaceMiner: new Job("space_miner", "Space Miner"),
-        Archaeologist: new Job("archaeologist", "Archaeologist"),
-        Banker: new Job("banker", "Banker"),
-        Priest: new Job("priest", "Priest"),
+        Colonist: new Job("colonist", "行星居民"),
+        TitanColonist: new Job("titan_colonist", "卫星行星居民"),
+        Miner: new Job("miner", "矿工"),
+        CoalMiner: new Job("coal_miner", "煤矿工人"),
+        CementWorker: new Job("cement_worker", "水泥工人"),
+        Professor: new Job("professor", "教授"),
+        Scientist: new Job("scientist", "科学家"),
+        Entertainer: new Job("entertainer", "艺人"),
+        HellSurveyor: new Job("hell_surveyor", "勘探者"),
+        SpaceMiner: new Job("space_miner", "太空矿工"),
+        Archaeologist: new Job("archaeologist", "考古学家"),
+        Banker: new Job("banker", "银行家"),
+        Priest: new Job("priest", "牧师"),
 
         // Crafting jobs
-        Plywood: new CraftingJob("Plywood", "Plywood Crafter", resources.Plywood),
-        Brick: new CraftingJob("Brick", "Brick Crafter", resources.Brick),
-        WroughtIron: new CraftingJob("Wrought_Iron", "Wrought Iron Crafter", resources.Wrought_Iron),
-        SheetMetal: new CraftingJob("Sheet_Metal", "Sheet Metal Crafter", resources.Sheet_Metal),
-        Mythril: new CraftingJob("Mythril", "Mythril Crafter", resources.Mythril),
-        Aerogel: new CraftingJob("Aerogel", "Aerogel Crafter", resources.Aerogel),
-        Nanoweave: new CraftingJob("Nanoweave", "Nanoweave Crafter", resources.Nanoweave),
-        Scarletite: new CraftingJob("Scarletite", "Scarletite Crafter", resources.Scarletite),
-        Quantium: new CraftingJob("Quantium", "Quantium Crafter", resources.Quantium),
+        Plywood: new CraftingJob("Plywood", "胶合板工匠", resources.Plywood),
+        Brick: new CraftingJob("Brick", "砌砖工匠", resources.Brick),
+        WroughtIron: new CraftingJob("Wrought_Iron", "锻铁工匠", resources.Wrought_Iron),
+        SheetMetal: new CraftingJob("Sheet_Metal", "金属板工匠", resources.Sheet_Metal),
+        Mythril: new CraftingJob("Mythril", "秘银工匠", resources.Mythril),
+        Aerogel: new CraftingJob("Aerogel", "气凝胶工匠", resources.Aerogel),
+        Nanoweave: new CraftingJob("Nanoweave", "纳米织物工匠", resources.Nanoweave),
+        Scarletite: new CraftingJob("Scarletite", "绯绯色金工匠", resources.Scarletite),
+        Quantium: new CraftingJob("Quantium", "量子工匠", resources.Quantium),
     }
 
     var buildings = {
@@ -2250,52 +2259,52 @@
       ],[
           () => !game.global.settings.showCity,
           (building) => building._tab === "city",
-          () => "Locked",
+          () => "未解锁",
           () => 0
       ],[
           () => !game.global.settings.showSpace && !game.global.settings.showOuter,
           (building) => building._tab === "space",
-          () => "Locked",
+          () => "未解锁",
           () => 0
       ],[
           () => !game.global.settings.showDeep,
           (building) => building._tab === "interstellar",
-          () => "Locked",
+          () => "未解锁",
           () => 0
       ],[
           () => !game.global.settings.showPortal,
           (building) => building._tab === "portal",
-          () => "Locked",
+          () => "未解锁",
           () => 0
       ],[
           () => !game.global.settings.showGalactic,
           (building) => building._tab === "galaxy",
-          () => "Locked",
+          () => "未解锁",
           () => 0
       ],[
           () => true,
           (building) => !building.isUnlocked(),
-          () => "Locked",
+          () => "未解锁",
           () => 0 // Should always be on top, processing locked building may lead to issues
       ],[
           () => true,
           (building) => state.queuedTargets.includes(building),
-          () => "Queued building, processing...",
+          () => "处理建筑队列……",
           () => 0
       ],[
           () => true,
           (building) => state.triggerTargets.includes(building),
-          () => "Active trigger, processing...",
+          () => "处理触发器……",
           () => 0
       ],[
           () => true,
           (building) => !building.autoBuildEnabled,
-          () => "AutoBuild disabled",
+          () => "自动建筑已关闭",
           () => 0
       ],[
           () => true,
           (building) => building.count >= building.autoMax,
-          () => "Maximum amount reached",
+          () => "已达建造上限",
           () => 0
       ],[
           () => true,
@@ -2316,30 +2325,30 @@
                   return 1 / (sabotage + 1);
               }
           },
-          (chance) => `${Math.round(chance*100)}% chance of successful launch`,
+          (chance) => `发射成功率为 ${Math.round(chance*100)}%`,
           (chance) => chance < 0.5 ? chance : 0
       ],[
           () => settings.jobDisableMiners && buildings.GatewayStarbase.count > 0,
           (building) => building === buildings.Mine || building === buildings.CoalMine,
-          () => "Miners disabled in Andromeda",
+          () => "到达仙女座星云后禁用矿工",
           () => 0
       ],[
           () => game.global.tech.piracy,
           (building) => building === buildings.StargateDefensePlatform && buildings.StargateDefensePlatform.count * 20 >= (game.global.race['instinct'] ? 0.09 : 0.1) * game.global.tech.piracy,
-          () => "Piracy fully supressed",
+          () => "海盗活动已肃清",
           () => 0
       ],[
           () => settings.autoMech && settings.mechBuild !== "none" && settings.buildingMechsFirst && buildings.SpireMechBay.count > 0 && buildings.SpireMechBay.stateOffCount === 0,
           (building) => {
               if (building.cost["Supply"]) {
                   if (MechManager.isActive) {
-                      return "Building mechs...";
+                      return "正在建造机甲……";
                   }
                   let mechBay = game.global.portal.mechbay;
                   let newSize = !haveTask("mech") ? settings.mechBuild === "random" ? MechManager.getPreferredSize()[0] : mechBay.blueprint.size : "titan";
                   let [newGems, newSupply, newSpace] = MechManager.getMechCost({size: newSize});
                   if (newSpace <= mechBay.max - mechBay.bay && newSupply <= resources.Supply.maxQuantity && newGems <= resources.Soul_Gem.currentQuantity) {
-                      return "Saving supplies for new mech";
+                      return "为下一层建造机甲而保留补给";
                   }
               }
           },
@@ -2348,7 +2357,7 @@
       ],[
           () => buildings.GateEastTower.isUnlocked() && buildings.GateWestTower.isUnlocked() && poly.hellSupression("gate").supress < settings.buildingTowerSuppression / 100,
           (building) => building === buildings.GateEastTower || building === buildings.GateWestTower,
-          () => "Too low gate supression",
+          () => "安全指数不足",
           () => 0
       ],[
           () => settings.prestigeType === "whitehole" && settings.prestigeWhiteholeSaveGems,
@@ -2357,7 +2366,7 @@
                   return true;
               }
           },
-          () => "Saving up Soul Gems for prestige",
+          () => "为重置而保留灵魂宝石",
           () => 0
       ],[
           () => {
@@ -2380,7 +2389,7 @@
                   }
               }
           },
-          (other) => `${other.title} gives more Supplies`,
+          (other) => `${other.title}可以提供更多补给`,
           () => 0 // Find what's better - Bireme or Transport
       ],[
           () => {
@@ -2401,7 +2410,7 @@
                   }
               }
           },
-          (other) => `${other.title} gives more Max Supplies`,
+          (other) => `${other.title}可以提供更多补给上限`,
           () => 0 // Find what's better - Port or Base
       ],[
           () => buildings.SpireWaygate.isUnlocked() && haveTech("waygate", 2),
@@ -2421,7 +2430,7 @@
       ],[
           () => buildings.GorddonEmbassy.count === 0 && resources.Knowledge.maxQuantity < settings.fleetEmbassyKnowledge,
           (building) => building === buildings.GorddonEmbassy,
-          () => `${getNumberString(settings.fleetEmbassyKnowledge)} Max Knowledge required`,
+          () => `知识上限需要到达 ${getNumberString(settings.fleetEmbassyKnowledge)}`,
           () => 0
       ],[
           () => game.global.race['magnificent'] && settings.buildingShrineType !== "any",
@@ -2447,17 +2456,17 @@
                   }
               }
           },
-          () => "Wrong shrine",
+          () => "圣地月相不符",
           () => 0
       ],[
           () => game.global.race['slaver'],
           (building) => {
               if (building === buildings.SlaveMarket) {
                   if (resources.Slave.currentQuantity >= resources.Slave.maxQuantity) {
-                      return "Slave pens already full";
+                      return "奴隶围栏已满";
                   }
                   if (resources.Money.currentQuantity + resources.Money.rateOfChange < resources.Money.maxQuantity && resources.Money.rateOfChange < 25000){
-                      return "Buying slaves only with excess money";
+                      return "只使用多余的资金购买奴隶";
                   }
               }
           },
@@ -2468,22 +2477,22 @@
           (building) => {
               if (building === buildings.SacrificialAltar && building.count > 0) {
                   if (resources.Population.currentQuantity < 1) {
-                      return "Too low population";
+                      return "市民太少";
                   }
                   if (resources.Population.currentQuantity !== resources.Population.maxQuantity) {
-                      return "Sacrifices performed only with full population";
-                  }
-                  if (game.global.race['parasite'] && game.global.city.calendar.wind === 0) {
-                      return "Parasites sacrificed only during windy weather";
-                  }
-                  if (game.global.civic[game.global.civic.d_job].workers < 1) {
-                      return "No default workers to sacrifice";
-                  }
+                    return "只在市民达到上限时献祭市民";
+                }
+                if (game.global.race['parasite'] && game.global.city.calendar.wind === 0) {
+                    return "拥有寄生虫特质的种族只在有风时献祭";
+                }
+                if (game.global.civic[game.global.civic.d_job].workers < 1) {
+                    return "默认工作没有可献祭的市民";
+                }
 
-                  if (game.global.city.s_alter.rage >= 3600 && game.global.city.s_alter.regen >= 3600 &&
-                      game.global.city.s_alter.mind >= 3600 && game.global.city.s_alter.mine >= 3600 &&
-                      (!isLumberRace() || game.global.city.s_alter.harvest >= 3600)){
-                      return "Sacrifice bonus already high enough";
+                if (game.global.city.s_alter.rage >= 3600 && game.global.city.s_alter.regen >= 3600 &&
+                    game.global.city.s_alter.mind >= 3600 && game.global.city.s_alter.mine >= 3600 &&
+                    (!isLumberRace() || game.global.city.s_alter.harvest >= 3600)){
+                    return "献祭加成已经足够高了";
                   }
               }
           },
@@ -2492,22 +2501,22 @@
       ],[
           () => true,
           (building) => building.getMissingConsumption(),
-          (resource) => `Missing ${resource.name} to operate`,
+          (resource) => `缺少${resource.name}，无法运作`,
           () => settings.buildingWeightingMissingSupply
       ],[
           () => true,
           (building) => building.getMissingSupport(),
-          (support) => `Missing ${support.name} to operate`,
+          (support) => `缺少${support.name}，无法运作`,
           () => settings.buildingWeightingMissingSupport
       ],[
           () => true,
           (building) => building.getUselessSupport(),
-          (support) => `Provided ${support.name} not currently needed`,
+          (support) => `暂时不需要提供${support.name}`,
           () => settings.buildingWeightingUselessSupport
       ],[
           () => true,
           (building) => building._tab === "city" && building !== buildings.Mill && building.stateOffCount > 0,
-          () => "Still have some non operating buildings",
+          () => "存在未供能的建筑",
           () => settings.buildingWeightingNonOperatingCity
       ],[
           () => true,
@@ -2523,112 +2532,112 @@
                   return true;
               }
           },
-          () => "Still have some non operating buildings",
+          () => "存在未供能的建筑",
           () => settings.buildingWeightingNonOperating
       ],[
           () => settings.prestigeBioseedConstruct && settings.prestigeType !== "bioseed",
           (building) => building === buildings.GasSpaceDock || building === buildings.GasSpaceDockShipSegment || building === buildings.GasSpaceDockProbe,
-          () => "Not needed for current prestige",
+          () => "当前重置类型不需要建造",
           () => 0
       ],[
           () => settings.prestigeBioseedConstruct && settings.prestigeType === "bioseed",
           (building) => building === buildings.DwarfWorldCollider || building === buildings.TitanMission,
-          () => "Not needed for Bioseed prestige",
+          () => "播种重置不需要建造",
           () => 0
       ],[
           () => settings.prestigeBioseedConstruct && settings.prestigeType === "whitehole",
           (building) => building === buildings.BlackholeJumpShip,
-          () => "Not needed for Whitehole prestige",
+          () => "黑洞重置不需要建造",
           () => 0
       ],[
           () => settings.prestigeBioseedConstruct && settings.prestigeType === "vacuum",
           (building) => building === buildings.BlackholeStellarEngine,
-          () => "Not needed for Vacuum Collapse prestige",
+          () => "真空坍缩不需要建造",
           () => 0
       ],[
           () => settings.prestigeBioseedConstruct && settings.prestigeType === "ascension" && isPillarFinished(),
           (building) => building === buildings.PitMission || building === buildings.RuinsMission,
-          () => "Not needed for Ascension prestige",
+          () => "飞升重置不需要建造",
           () => 0
       ],[
           () => settings.prestigeType === "mad" && (haveTech("mad") || (techIds['tech-mad'].isUnlocked() && techIds['tech-mad'].isAffordable(true))),
           (building) => !building.is.housing && !building.is.garrison && !building.cost["Knowledge"] && building !== buildings.OilWell,
-          () => "Awaiting MAD prestige",
+          () => "等待核爆重置",
           () => settings.buildingWeightingMADUseless
       ],[
           () => true,
           (building) => building !== buildings.ForgeHorseshoe && building !== buildings.RedForgeHorseshoe && building.count === 0,
-          () => "New building",
+          () => "新解锁建筑",
           () => settings.buildingWeightingNew
       ],[
           () => resources.Power.isUnlocked() && resources.Power.currentQuantity < resources.Power.maxQuantity,
           (building) => building === buildings.LakeCoolingTower || building.powered < 0,
-          () => "Need more energy",
+          () => "需要更多电力",
           () => settings.buildingWeightingNeedfulPowerPlant
       ],[
           () => resources.Power.isUnlocked() && resources.Power.currentQuantity > resources.Power.maxQuantity,
           (building) => building !== buildings.Mill && (building === buildings.LakeCoolingTower || building.powered < 0),
-          () => "No need for more energy",
+          () => "无需更多电力",
           () => settings.buildingWeightingUselessPowerPlant
       ],[
           () => resources.Power.isUnlocked(),
           (building) => building !== buildings.LakeCoolingTower && building.powered > 0 && (building === buildings.NeutronCitadel ? getCitadelConsumption(building.count+1) - getCitadelConsumption(building.count) : building.powered) > resources.Power.currentQuantity,
-          () => "Not enough energy",
+          () => "电力不足",
           () => settings.buildingWeightingUnderpowered
       ],[
           () => state.knowledgeRequiredByTechs < resources.Knowledge.maxQuantity,
           (building) => building.is.knowledge && building !== buildings.Wardenclyffe, // We want Wardenclyffe for morale
-          () => "No need for more knowledge",
+          () => "无需更多知识上限",
           () => settings.buildingWeightingUselessKnowledge
       ],[
           () => state.knowledgeRequiredByTechs > resources.Knowledge.maxQuantity,
           (building) => building.is.knowledge,
-          () => "Need more knowledge",
+          () => "需要更多知识上限",
           () => settings.buildingWeightingNeedfulKnowledge
       ],[
           () => buildings.BlackholeMassEjector.count > 0 && buildings.BlackholeMassEjector.count * 1000 - game.global.interstellar.mass_ejector.total > 100,
           (building) => building === buildings.BlackholeMassEjector,
-          () => "Still have some unused ejectors",
+          () => "存在未供能的喷射器",
           () => settings.buildingWeightingUnusedEjectors
       ],[
           () => resources.Crates.storageRatio < 1 || resources.Containers.storageRatio < 1,
           (building) => building === buildings.StorageYard || building === buildings.Warehouse || building === buildings.EnceladusMunitions,
-          () => "Still have some unused storage",
+          () => "存在未使用的箱子",
           () => settings.buildingWeightingCrateUseless
       ],[
           () => resources.Oil.maxQuantity < resources.Oil.requestedQuantity && buildings.OilWell.count <= 0 && buildings.GasMoonOilExtractor.count <= 0,
           (building) => building === buildings.OilWell || building === buildings.GasMoonOilExtractor,
-          () => "Need more fuel",
+          () => "需要更多燃料",
           () => settings.buildingWeightingMissingFuel
       ],[
           () => resources.Helium_3.maxQuantity < resources.Helium_3.requestedQuantity || resources.Oil.maxQuantity < resources.Oil.requestedQuantity,
           (building) => building === buildings.OilDepot || building === buildings.SpacePropellantDepot || building === buildings.GasStorage,
-          () => "Need more fuel",
+          () => "需要更多燃料",
           () => settings.buildingWeightingMissingFuel
       ],[
           () => game.global.race.hooved && resources.Horseshoe.spareQuantity >= resources.Horseshoe.storageRequired,
           (building) => building === buildings.ForgeHorseshoe || building === buildings.RedForgeHorseshoe,
-          () => "No more Horseshoes needed",
+          () => "无需更多马蹄铁",
           () => settings.buildingWeightingHorseshoeUseless
       ],[
           () => game.global.race.calm && resources.Zen.currentQuantity < resources.Zen.maxQuantity,
           (building) => building === buildings.MeditationChamber,
-          () => "No more Meditation Space needed",
+          () => "无需更多禅冥想空间",
           () => settings.buildingWeightingZenUseless
       ],[
           () => buildings.GateTurret.isUnlocked() && poly.hellSupression("gate").rating >= 7500,
           (building) => building === buildings.GateTurret,
-          () => "Gate demons fully supressed",
+          () => "恶魔活动已肃清",
           () => settings.buildingWeightingGateTurret
       ],[
           () => (resources.Containers.isUnlocked() || resources.Crates.isUnlocked()) && resources.Containers.storageRatio === 1 && resources.Crates.storageRatio === 1,
           (building) => building === buildings.Shed || building === buildings.RedGarage || building === buildings.AlphaWarehouse || building === buildings.ProximaCargoYard || building === buildings.TitanStorehouse,
-          () => "Need more storage",
+          () => "需要构建更多箱子",
           () => settings.buildingWeightingNeedStorage
       ],[
           () => resources.Population.maxQuantity > 50 && resources.Population.storageRatio < 0.9,
           (building) => building.is.housing && building !== buildings.Alien1Consulate && !(building instanceof Assembly),
-          () => "No more houses needed",
+          () => "无需更多住房",
           () => settings.buildingWeightingUselessHousing
     ]];
 
@@ -3599,7 +3608,7 @@
             let optionsNode = document.querySelector("#govType button");
             let title = game.loc('civics_government_type');
             WindowManager.openModalWindowWithCallback(optionsNode, title, () => {
-                GameLog.logSuccess("special", `Revolution! Government changed to ${game.loc("govern_" + government)}.`, ['events', 'major_events']);
+                GameLog.logSuccess("special", `发生革命！社会体制切换为 ${game.loc("govern_" + government)} 。`, ['events', 'major_events']);
                 getVueById('govModal')?.setGov(government);
             });
         },
@@ -3981,7 +3990,7 @@
                 }
                 let title = game.loc('civics_espionage_actions');
                 WindowManager.openModalWindowWithCallback(optionsNode, title, () => {
-                    GameLog.logSuccess("spying", `Performing "${game.loc("civics_spy_" + espionageToPerform)}" covert operation against ${getGovName(govIndex)}.`, ['spy']);
+                    GameLog.logSuccess("spying", `对${getGovName(govIndex)}进行"${game.loc("civics_spy_" + espionageToPerform)}"隐秘行动。`, ['spy']);
                     getVueById('espModal')?.[espionageToPerform]?.(govIndex);
                 });
             }
@@ -4889,7 +4898,7 @@
                 this._assemblyVue.setEquip(mech.equip[i], i);
             }
             this._assemblyVue.build();
-            GameLog.logSuccess("mech_build", `${this.mechDesc(mech)} mech has been assembled.`, ['hell']);
+            GameLog.logSuccess("mech_build", `${this.mechDesc(mech)} 机甲已建造。`, ['hell']);
         },
 
         scrapMech(mech) {
@@ -4993,7 +5002,7 @@
                 }
                 if (building.weighting > 0) {
                     building.weighting = Math.max(Number.MIN_VALUE, building.weighting - 1e-7 * building.count);
-                    building.extraDescription = "AutoBuild weighting: " + getNiceNumber(building.weighting) + "<br>" + building.extraDescription;
+                    building.extraDescription = "自动建造权重：" + getNiceNumber(building.weighting) + "<br>" + building.extraDescription;
                 }
             }
         },
@@ -5031,34 +5040,34 @@
 
                 if (!project.isUnlocked()) {
                     project.weighting = 0;
-                    project.extraDescription = "Locked<br>";
+                    project.extraDescription = "未解锁<br>";
                 }
                 if (!project.autoBuildEnabled || !settings.autoARPA) {
                     project.weighting = 0;
-                    project.extraDescription = "AutoBuild disabled<br>";
+                    project.extraDescription = "未启用自动建造<br>";
                 }
                 if (project.count >= project.autoMax && (project !== projects.ManaSyphon || settings.prestigeType !== 'vacuum')) {
                     project.weighting = 0;
-                    project.extraDescription = "Maximum amount reached<br>";
+                    project.extraDescription = "已达建造上限<br>";
                 }
                 if (settings.prestigeMADIgnoreArpa && isEarlyGame()) {
                     project.weighting = 0;
-                    project.extraDescription = "Projects ignored Pre-MAD<br>";
+                    project.extraDescription = "核爆重置阶段之前忽略项目<br>";
                 }
                 if (state.queuedTargets.includes(project)) {
                     project.weighting = 0;
-                    project.extraDescription = "Queued project, processing...<br>";
+                    project.extraDescription = "处理建筑队列中的项目……<br>";
                 }
                 if (state.triggerTargets.includes(project)) {
                     project.weighting = 0;
-                    project.extraDescription = "Active trigger, processing...<br>";
+                    project.extraDescription = "处理触发器中的项目……<br>";
                 }
 
                 if (settings.arpaScaleWeighting) {
                     project.weighting /= 1 - (0.01 * project.progress);
                 }
                 if (project.weighting > 0) {
-                    project.extraDescription = `AutoARPA weighting: ${getNiceNumber(project.weighting)} (${project.currentStep}%)<br>${project.extraDescription}`;
+                    project.extraDescription = `自动ARPA权重：${getNiceNumber(project.weighting)} (${project.currentStep}%)<br>${project.extraDescription}`;
                 }
             }
         },
@@ -5206,17 +5215,17 @@
 
     var GameLog = {
         Types: {
-            special: "Specials",
-            construction: "Construction",
-            multi_construction: "Multi-part Construction",
-            arpa: "A.R.P.A Progress",
-            research: "Research",
-            spying: "Spying",
-            attack: "Attack",
-            mercenary: "Mercenaries",
-            mech_build: "Mech Build",
-            mech_scrap: "Mech Scrap",
-            outer_fleet: "True Path Fleet"
+            special: "特殊",
+            construction: "建造",
+            multi_construction: "分项工程",
+            arpa: "ARPA项目",
+            research: "研究",
+            spying: "间谍",
+            attack: "进攻",
+            mercenary: "雇佣兵",
+            mech_build: "制造机甲",
+            mech_scrap: "解体机甲",
+            outer_fleet: "智械黎明舰队"
         },
 
         logSuccess(loggingType, text, tags) {
@@ -6734,7 +6743,7 @@
             if (state.evolutionTarget === null) {
                 state.evolutionTarget = races.custom.getHabitability() > 0 ? races.custom : races.entish;
             }
-            GameLog.logSuccess("special", `Attempting evolution of ${state.evolutionTarget.name}.`, ['progress']);
+            GameLog.logSuccess("special", `尝试进化为${state.evolutionTarget.name}。`, ['progress']);
         }
 
         // Apply challenges
@@ -7076,9 +7085,9 @@
 
             // Log the interaction
             if (mercenariesHired === 1) {
-                GameLog.logSuccess("mercenary", `Hired a mercenary to join the garrison.`, ['combat']);
+                GameLog.logSuccess("mercenary", `雇佣了 1 名雇佣兵。`, ['combat']);
             } else if (mercenariesHired > 1) {
-                GameLog.logSuccess("mercenary", `Hired ${mercenariesHired} mercenaries to join the garrison.`, ['combat']);
+                GameLog.logSuccess("mercenary", `雇佣了 ${mercenariesHired} 名雇佣兵。`, ['combat']);
             }
         }
     }
@@ -7116,7 +7125,7 @@
                     continue;
                 }
 
-                GameLog.logSuccess("spying", `Training a spy to send against ${getGovName(foreign.id)}.`, ['spy']);
+                GameLog.logSuccess("spying", `针对${getGovName(foreign.id)}训练一名间谍。`, ['spy']);
                 m._foreignVue.spy(foreign.id);
             }
         }
@@ -7277,7 +7286,7 @@
         let campaignTitle = m.getCampaignTitle(requiredTactic);
         let battalionRating = game.armyRating(m.raid, "army");
         let advantagePercent = m.getAdvantage(battalionRating, requiredTactic, currentTarget.id).toFixed(1);
-        GameLog.logSuccess("attack", `Launching ${campaignTitle} campaign against ${getGovName(currentTarget.id)} with ${currentTarget.gov.spy < 1 ? "~" : ""}${advantagePercent}% advantage.`, ['combat']);
+        GameLog.logSuccess("attack", `对${getGovName(currentTarget.id)}发动${campaignTitle}战役，拥有${currentTarget.gov.spy < 1 ? "约" : ""}${advantagePercent}%优势。`, ['combat']);
 
         m.launchCampaign(currentTarget.id);
     }
@@ -8778,7 +8787,7 @@
             // Check queue and trigger conflicts
             let conflict = getCostConflict(building);
             if (conflict) {
-                building.extraDescription += `Conflicts with ${conflict.obj.name} for ${conflict.res.name} (${conflict.obj.cause})<br>`;
+                building.extraDescription += `与${conflict.obj.name}因${conflict.res.name}而冲突 (${conflict.obj.cause})<br>`;
                 continue;
             }
 
@@ -8861,7 +8870,7 @@
                         }
 
                         // If we reached here - then we want to delay with our current building. Return all way back to main loop, and try to build something else
-                        building.extraDescription += `Conflicts with ${other.title} for ${resource.name}<br>`;
+                        building.extraDescription += `与${other.title}因${resource.name}而冲突<br>`;
                         continue buildingsLoop;
                     }
                 }
@@ -8887,68 +8896,68 @@
 
         // Skip ignored techs
         if (settings.researchIgnore.includes(itemId)) {
-            return "Ignored research";
+            return "研究已忽略";
         }
 
         // Save soul gems for reset
         if (settings.prestigeType === "whitehole" && settings.prestigeWhiteholeSaveGems &&
             tech.cost["Soul_Gem"] > resources.Soul_Gem.currentQuantity - 10) {
-            return "Saving up Soul Gems for prestige";
+            return "为重置而保留灵魂宝石";
         }
 
         // Don't click any reset options without user consent... that would be a dick move, man.
         if (itemId === "tech-exotic_infusion" || itemId === "tech-infusion_check" || itemId === "tech-infusion_confirm" ||
             itemId === "tech-dial_it_to_11" || itemId === "tech-limit_collider" || itemId === "tech-demonic_infusion" ||
             itemId === "tech-protocol66" || itemId === "tech-protocol66a") {
-            return "Reset research";
+            return "不触发重置";
         }
 
         // Don't use Dark Bomb if not enabled
         if (itemId == "tech-dark_bomb" && !settings.prestigeDemonicBomb) {
-            return "Dark Bomb disabled";
+            return "不使用暗能量炸弹";
         }
 
         // Don't waste phage and plasmid on ascension techs if we're not going there
         if ((itemId === "tech-incorporeal" || itemId === "tech-tech_ascension") && settings.prestigeType !== "ascension") {
-            return "Not needed for current prestige";
+            return "当前重置类型不需要建造";
         }
 
         // Alien Gift
         if (itemId === "tech-xeno_gift" && resources.Knowledge.maxQuantity < settings.fleetAlienGiftKnowledge) {
-            return `${getNumberString(settings.fleetAlienGiftKnowledge)} Max Knowledge required`;
+            return `知识上限需要到达 ${getNumberString(settings.fleetAlienGiftKnowledge)}`;
         }
 
         // Unification
         if ((itemId === "tech-unification2" || itemId === "tech-unite") && !settings.foreignUnification) {
-            return "Unification disabled";
+            return "不进行统一";
         }
 
         // If user wants to stabilize blackhole then do it, unless we're on blackhole run
         if (itemId === "tech-stabilize_blackhole") {
             if (!settings.prestigeWhiteholeStabiliseMass) {
-                return "Blackhole stabilization disabled";
+                return "不稳定黑洞";
             }
             if (settings.prestigeType === "whitehole") {
-                return "Disabled during whilehole reset";
+                return "黑洞重置时不稳定黑洞";
             }
         }
 
         if (itemId !== settings.userResearchTheology_1) {
             const isFanatRace = () => Object.values(fanatAchievements).reduce((result, combo) => result || (game.global.race.species === combo.race && game.global.race.gods === combo.god && !isAchievementUnlocked(combo.achieve, game.alevel())), false);
             if (itemId === "tech-anthropology" && !(settings.userResearchTheology_1 === "auto" && settings.prestigeType === "mad" && !isFanatRace())) {
-                return "Undesirable theology path";
+                return "不是想要的神学研究分支";
             }
             if (itemId === "tech-fanaticism" && !(settings.userResearchTheology_1 === "auto" && (settings.prestigeType !== "mad" || isFanatRace()))) {
-                return "Undesirable theology path";
+                return "不是想要的神学研究分支";
             }
         }
 
         if (itemId !== settings.userResearchTheology_2) {
             if (itemId === "tech-deify" && !(settings.userResearchTheology_2 === "auto" && (settings.prestigeType === "ascension" || settings.prestigeType === "demonic"))) {
-                return "Undesirable theology path";
+                return "不是想要的神学研究分支";
             }
             if (itemId === "tech-study" && !(settings.userResearchTheology_2 === "auto" && settings.prestigeType !== "ascension" && settings.prestigeType !== "demonic")) {
-                return "Undesirable theology path";
+                return "不是想要的神学研究分支";
             }
         }
         return false;
@@ -9055,7 +9064,7 @@
 
             // Ascension Trigger info
             if (building === buildings.SiriusAscensionTrigger && availablePower < building.powered) {
-                building.extraDescription = `Missing ${Math.ceil(building.powered - availablePower)} MW to power on<br>${building.extraDescription}`;
+                building.extraDescription = `缺少${Math.ceil(building.powered - availablePower)}MW电力，无法启用<br>${building.extraDescription}`;
             }
 
             // Spire managed separately
@@ -9340,7 +9349,7 @@
             let puriQueued = state.queuedTargetsAll.includes(buildings.SpirePurifier);
 
             let [bestSupplies, bestPort, bestBase] = getBestSupplyRatio(spireSupport, maxPorts, maxCamps);
-            buildings.SpirePurifier.extraDescription = `Supported Supplies: ${Math.floor(bestSupplies)}<br>${buildings.SpirePurifier.extraDescription}`;
+            buildings.SpirePurifier.extraDescription = `提供补给：${Math.floor(bestSupplies)}<br>${buildings.SpirePurifier.extraDescription}`;
 
             let nextCost =
               mechQueued && nextMechCost <= bestSupplies ? nextMechCost :
@@ -10110,7 +10119,7 @@
             let name = game.loc(`outer_shipyard_class_${newShip.class}`);
             let targetRef = game.actions.space[regionsToProtect[0]].info.name;
             let targetName = typeof targetRef === 'function' ? targetRef() : targetRef;
-            GameLog.logSuccess("outer_fleet", `${name} has been assembled, and dispatched to ${targetName}.`, ['combat']);
+            GameLog.logSuccess("outer_fleet", `${name}已建造，并派往${targetName}。`, ['combat']);
         }
     }
 
@@ -10450,9 +10459,9 @@
                 trashMechs.sort((a, b) => b.id - a.id); // Goes from bottom to top of the list, so it won't shift IDs
                 if (trashMechs.length > 1) {
                     let rating = average(trashMechs.map(mech => mech.power / m.bestMech[mech.size].power));
-                    GameLog.logSuccess("mech_scrap", `${trashMechs.length} mechs (~${Math.round(rating * 100)}%) has been scrapped.`, ['hell']);
+                    GameLog.logSuccess("mech_scrap", `${trashMechs.length}机甲(~${Math.round(rating * 100)}%)已解体。`, ['hell']);
                 } else {
-                    GameLog.logSuccess("mech_scrap", `${m.mechDesc(trashMechs[0])} mech has been scrapped.`, ['hell']);
+                    GameLog.logSuccess("mech_scrap", `${m.mechDesc(trashMechs[0])}机甲已解体。`, ['hell']);
                 }
                 trashMechs.forEach(mech => m.scrapMech(mech));
                 resources.Supply.currentQuantity = Math.min(resources.Supply.currentQuantity + supplyGained, resources.Supply.maxQuantity);
@@ -10701,7 +10710,7 @@
                         if (obj.isAffordable(true)) {
                             state.queuedTargets.push(obj);
                             if (queueSave) {
-                                state.conflictTargets.push({name: obj.title, cause: "Queue", cost: obj.cost});
+                                state.conflictTargets.push({name: obj.title, cause: "队列", cost: obj.cost});
                             }
                         }
                     }
@@ -10713,11 +10722,11 @@
         });
 
         if (SpyManager.purchaseMoney && settings.prioritizeUnify.includes("save")) {
-            state.conflictTargets.push({name: techIds["tech-unification"].title, cause: "Purchase", cost: {Money: SpyManager.purchaseMoney}});
+            state.conflictTargets.push({name: techIds["tech-unification"].title, cause: "收购", cost: {Money: SpyManager.purchaseMoney}});
         }
 
         if (FleetManagerOuter.nextShipAffordable && settings.prioritizeOuterFleet.includes("save")) {
-            state.conflictTargets.push({name: game.global.space.shipyard.blueprint.name ?? "Unnamed ship", cause: "Ship", cost: FleetManagerOuter.nextShipCost});
+            state.conflictTargets.push({name: game.global.space.shipyard.blueprint.name ?? "无名舰船", cause: "舰船", cost: FleetManagerOuter.nextShipCost});
         }
 
         if (settings.autoTrigger) {
@@ -10729,7 +10738,7 @@
                 let obj = buildings.GorddonEmbassy;
                 state.triggerTargets.push(obj);
                 if (triggerSave) {
-                    state.conflictTargets.push({name: obj.title, cause: "Fleet", cost: obj.cost});
+                    state.conflictTargets.push({name: obj.title, cause: "战舰", cost: obj.cost});
                 }
             }
 
@@ -10740,7 +10749,7 @@
                 if (obj) {
                     state.triggerTargets.push(obj);
                     if (triggerSave) {
-                        state.conflictTargets.push({name: obj.title, cause: "Trigger", cost: obj.cost});
+                        state.conflictTargets.push({name: obj.title, cause: "触发器", cost: obj.cost});
                     }
                 }
             }
@@ -11443,6 +11452,113 @@
             return;
         }
 
+        //可能冲突
+        if(!translateFinish)
+        {
+            //建筑翻译手动注入
+            let theKeys = Object.keys(buildings);
+            let difList = {
+                "Proxima Dyson Sphere (Orichalcum)": "奥利哈刚戴森球",
+                "Windmill (Evil)": "风车（邪恶种群）",
+                "Sirius Ascension Machine (Complete)":"飞升装置（已完成）",
+                "Shed":"仓库",
+                "Alpha Warehouse":"半人马座α星系仓库",
+                "Titan Habitat":evolve.actions.space.spc_titan.info.name() + "定居点",
+                "Alpha Habitat":"半人马座α星系定居点",
+                "Red Mine":evolve.actions.space.spc_red.info.name() + "行星矿井",
+                "Titan Mine":evolve.actions.space.spc_titan.info.name() + "行星矿井",
+                "Dwarf Mass Relay":"质量中继器",
+                "Dwarf Mass Relay (Complete)":"质量中继器（已完成）",
+                "Hell Space Casino":"太空赌场",
+                "Red Spaceport":evolve.actions.space.spc_red.info.name() + "太空港",
+                "Titan Spaceport":evolve.actions.space.spc_titan.info.name() + "太空港",
+                "Red Horseshoe (Cataclysm)":"锻造马蹄铁（大灾变）",
+                "Red Nanite Factory (Cataclysm)":"纳米机器人工厂（大灾变）",
+                "Red Assembly (Cataclysm)":"装配工厂（大灾变）",
+                "Alpha Graphene Plant":"半人马座α星系石墨烯厂",
+                "Titan Graphene Plant":evolve.actions.space.spc_titan.info.name() + "石墨烯厂",
+                "Titan Bank":evolve.actions.space.spc_titan.info.name() + "银行",
+                "Titan AI Core (Complete)":"AI超级核心（已完成）",
+                'Dwarf World Collider':'世界对撞机',
+                'Dwarf World Collider (Complete)':'世界对撞机（已完成）',
+                '':'',
+                '':'',
+                '':'',
+                '':'',
+                '':'',
+                '':'',
+                '':''
+            }
+            for(let i = 0; i < theKeys.length; i++)
+            {
+                let buildObj = buildings[theKeys[i]];
+                let tempTitle;
+                let tempB1 = buildObj._tab;
+                let tempB2 = buildObj._id;
+
+                if(Object.keys(difList).includes(buildObj.name)){
+                    buildObj.name = difList[buildObj.name];
+                    continue;
+                }
+
+                if(typeof(evolve.actions[tempB1][tempB2])  == "undefined")
+                {
+                    let tempSubObList = Object.keys(evolve.actions[tempB1]);
+                    for(let j = 0; j < tempSubObList.length; j++)
+                    {
+                        if(!(typeof(evolve.actions[tempB1][tempSubObList[j]][tempB2])  == "undefined"))
+                        {
+                            tempTitle = evolve.actions[tempB1][tempSubObList[j]][tempB2].title;
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    tempTitle = evolve.actions[tempB1][tempB2].title
+                }
+                buildObj.name = (typeof(tempTitle) == "function") ? tempTitle() : tempTitle
+            }
+            //资源翻译注入
+            theKeys = Object.keys(resources)
+            for(let i = 0; i < theKeys.length; i++)
+            {
+                switch(resources[theKeys[i]].constructor.name)
+                {
+                    case "Resource":
+                        resources[theKeys[i]].name = game.global.resource[resources[theKeys[i]]._id].name
+                        break;
+                    case "SpecialResource":
+                    case "Supply":
+                        resources[theKeys[i]].name = game.loc("resource_"+resources[theKeys[i]]._id+"_name")
+                        break;
+                    case "Support":
+                    case "BeltSupport":
+                    case "ElectrolysisSupport":
+                        break;
+                    default:
+                        //console.log(resources[theKeys[i]].constructor.name)
+                        break;
+                }
+            }
+            //arpa翻译手动注入
+            theKeys = Object.keys(projects);
+            for(let i = 0; i < theKeys.length; i++)
+            {
+                let tempObj;
+                switch (theKeys[i])
+                {
+                    case "Monument":
+                        tempObj = "纪念碑";
+                        break;
+                    default:
+                        tempObj = game.actions.arpa[projects[theKeys[i]]._id].title;
+                }
+                projects[theKeys[i]].name = (typeof(tempObj) == "function") ?  tempObj() : tempObj;
+            }
+            translateFinish = true;
+        }
+        //
         // Make sure we have jQuery UI even if script was injected without *monkey
         if (!jQuery.ui) {
             let el = document.createElement("script");
@@ -12671,42 +12787,42 @@
         })
         .on('click', {label: "威望重置类型 (prestigeType)", name: "prestigeType", type: "select", options: prestigeOptions}, openOverrideModal);
 
-        addSettingsToggle(currentNode, "prestigeWaitAT", "Use all Accelerated Time", "Delay reset until all accelerated time will be used");
-        addSettingsToggle(currentNode, "prestigeMADIgnoreArpa", "Ignore early game A.R.P.A.", "Disables building any A.R.P.A. projects until MAD is researched, or rival have appeared");
-        addSettingsToggle(currentNode, "prestigeBioseedConstruct", "Ignore useless buildings", "Space Dock, Bioseeder Ship and Probes will be constructed only when Bioseed prestige enabled. World Collider won't be constructed during Bioseed. Jump Ship won't be constructed during Whitehole. Stellar Engine won't be constucted during Vacuum Collapse.");
-        addSettingsNumber(currentNode, "prestigeEnabledBarracks", "Percent of active barracks after unification", "Percent of barracks to keep enabled after unification, disabling some of them can reduce stress. All barracks will be enabled back when Bioseeder Ship will be at 90%, or after building World Collider");
+        addSettingsToggle(currentNode, "prestigeWaitAT", "是否在重置前用完所有的加速时间", "直到用完所有的加速时间才进行重置");
+        addSettingsToggle(currentNode, "prestigeMADIgnoreArpa", "忽略游戏初期的ARPA项目", "研究相互毁灭或竞争国家出现之前，不建造ARPA项目");
+        addSettingsToggle(currentNode, "prestigeBioseedConstruct", "忽略无用的建筑", "只在需要进行播种重置时建造星际船坞、生命播种飞船和星际探测器，并且不建造世界超级对撞机。进行黑洞重置时不建造跃迁飞船。进行真空坍缩时不建造恒星引擎。");
+        addSettingsNumber(currentNode, "prestigeEnabledBarracks", "研究统一后的兵营比例", "研究统一后进行供能的兵营比例，取消供能可以提升士气。当生命播种飞船达到90段分项工程，或者是建造世界超级对撞机后，所有兵营将全部恢复供能。");
 
         // MAD
-        addSettingsHeader1(currentNode, "Mutual Assured Destruction");
-        addSettingsToggle(currentNode, "prestigeMADWait", "Wait for maximum population", "Wait for maximum population and soldiers to maximize plasmids gain");
-        addSettingsNumber(currentNode, "prestigeMADPopulation", "Required population", "Required number of workers and soldiers before performing MAD reset");
+        addSettingsHeader1(currentNode, "核爆重置");
+        addSettingsToggle(currentNode, "prestigeMADWait", "是否等待人口达到最大", "等待市民和士兵达到最大以后再进行重置，以尽可能多地获得质粒");
+        addSettingsNumber(currentNode, "prestigeMADPopulation", "人口阈值", "达到相应数量的市民和士兵后，才进行核爆重置");
 
         // Bioseed
-        addSettingsHeader1(currentNode, "Bioseed");
-        addSettingsNumber(currentNode, "prestigeBioseedProbes", "Required probes", "Required number of probes before launching bioseeder ship");
+        addSettingsHeader1(currentNode, "播种重置");
+        addSettingsNumber(currentNode, "prestigeBioseedProbes", "播种前至少需要的太空探测器数量", "达到太空探测器所需数量后，才进行播种重置");
 
         // Whitehole
-        addSettingsHeader1(currentNode, "Whitehole");
-        addSettingsToggle(currentNode, "prestigeWhiteholeSaveGems", "Save up Soul Gems for reset", "Save up enough Soul Gems for reset, only excess gems will be used. This option does not affect triggers.");
-        addSettingsNumber(currentNode, "prestigeWhiteholeMinMass", "Minimum solar mass for reset", "Required minimum solar mass of blackhole before prestiging. Script do not stabilize on blackhole run, this number will need to be reached naturally");
+        addSettingsHeader1(currentNode, "黑洞重置");
+        addSettingsToggle(currentNode, "prestigeWhiteholeSaveGems", "是否保留重置所需数量的灵魂宝石", "保留重置所需数量的灵魂宝石，只使用超过相应数量的灵魂宝石。不影响触发器。");
+        addSettingsNumber(currentNode, "prestigeWhiteholeMinMass", "太阳质量阈值，达到后才会进行黑洞重置", "达到太阳质量阈值后，才进行黑洞重置。脚本不会在威望重置类型为黑洞重置时稳定黑洞，需要自然达到此质量");
 
         // Ascension
-        addSettingsHeader1(currentNode, "Ascension");
-        addSettingsToggle(currentNode, "prestigeAscensionSkipCustom", "Skip Custom Race", "Perform reset without making any changes to custom. This option is required, script won't ascend automatically without it enabled.");
-        addSettingsToggle(currentNode, "prestigeAscensionPillar", "Wait for Pillar", "Wait for Pillar before ascending, unless it was done earlier");
+        addSettingsHeader1(currentNode, "飞升重置");
+        addSettingsToggle(currentNode, "prestigeAscensionSkipCustom", "是否忽略自定义种族", "不对自定义种族进行任何修改就进行重置。只有开启此项才能自动进行飞升重置。");
+        addSettingsToggle(currentNode, "prestigeAscensionPillar", "是否等待永恒之柱", "直到永恒之柱上嵌入水晶后才进行重置");
 
         // Demonic Infusion
-        addSettingsHeader1(currentNode, "Demonic Infusion");
-        addSettingsNumber(currentNode, "prestigeDemonicFloor", "Minimum spire floor for reset", "Perform reset after climbing up to this spire floor");
-        addSettingsNumber(currentNode, "prestigeDemonicPotential", "Maximum mech potential for reset", "Perform reset only if current mech team potential below given amount. Full bay of best mechs will have `1` potential. This allows to postpone reset if your team is still good after reaching target floor, and can quickly clear another floor");
-        addSettingsToggle(currentNode, "prestigeDemonicBomb", "Use Dark Energy Bomb", "Kill Demon Lord with Dark Energy Bomb");
+        addSettingsHeader1(currentNode, "恶魔灌注");
+        addSettingsNumber(currentNode, "prestigeDemonicFloor", "进行恶魔灌注的层数阈值", "到达相应层数后才进行恶魔灌注");
+        addSettingsNumber(currentNode, "prestigeDemonicPotential", "进行恶魔灌注的最大机甲潜力", "只在当前机甲潜力低于相应数值后才进行恶魔灌注。机甲舱充满最好设计的机甲时潜力为1。这样就可以在机甲战斗力还较高的时候延迟恶魔灌注，同时也可以更快地通过一些楼层。");
+        addSettingsToggle(currentNode, "prestigeDemonicBomb", "是否使用暗能量炸弹", "用暗能量炸弹送恶魔领主上西天");
 
         document.documentElement.scrollTop = document.body.scrollTop = currentScrollPosition;
     }
 
     function buildGovernmentSettings(parentNode, secondaryPrefix) {
         let sectionId = "government";
-        let sectionName = "Government";
+        let sectionName = "政府";
 
         let resetFunction = function() {
             resetGovernmentSettings(true);
@@ -12725,26 +12841,26 @@
         let currentNode = $(`#script_${secondaryPrefix}governmentContent`);
         currentNode.empty().off("*");
 
-        addSettingsNumber(currentNode, "generalMinimumTaxRate", "Minimum allowed tax rate", "Minimum tax rate for autoTax. Will still go below this amount if money storage is full");
-        addSettingsNumber(currentNode, "generalMinimumMorale", "Minimum allowed morale", "Use this to set a minimum allowed morale. Remember that less than 100% can cause riots and weather can cause sudden swings");
-        addSettingsNumber(currentNode, "generalMaximumMorale", "Maximum allowed morale", "Use this to set a maximum allowed morale. The tax rate will be raised to lower morale to this maximum");
+        addSettingsNumber(currentNode, "generalMinimumTaxRate", "最低允许税率", "自动税率使用的最低税率。如果资金满了，将可能低于此数值。");
+        addSettingsNumber(currentNode, "generalMinimumMorale", "最低允许士气", "设置最低允许的士气。少于100%士气可能引起税收抵制，请尽量不要设置到100%以下。另外请记得天气的影响");
+        addSettingsNumber(currentNode, "generalMaximumMorale", "最高允许士气", "设置最高允许的士气。如果士气超过此数值，将提高税率");
 
-        addSettingsToggle(currentNode, "govManage", "Manage changes of government", "Manage changes of government when they become available");
+        addSettingsToggle(currentNode, "govManage", "是否管理社会体制变化", "当可能的时候，自动改变社会体制");
 
         let governmentOptions = Object.keys(GovernmentManager.Types).filter(id => id !== "anarchy").map(id => ({val: id, label: game.loc(`govern_${id}`), hint: game.loc(`govern_${id}_desc`)}));
-        addSettingsSelect(currentNode, "govInterim", "Interim Government", "Temporary low tier government until you research other governments", governmentOptions);
-        addSettingsSelect(currentNode, "govFinal", "Second Government", "Second government choice, chosen once becomes available. Can be the same as above", governmentOptions);
-        addSettingsSelect(currentNode, "govSpace", "Space Government", "Government for bioseed+. Chosen once you researched Quantum Manufacturing. Can be the same as above", governmentOptions);
+        addSettingsSelect(currentNode, "govInterim", "临时社会体制", "当研究其他社会体制之前，用于过渡的临时社会体制", governmentOptions);
+        addSettingsSelect(currentNode, "govFinal", "第二社会体制", "第二社会体制，当此社会体制可用后立刻进行切换。可以与上面的社会体制相同。", governmentOptions);
+        addSettingsSelect(currentNode, "govSpace", "太空社会体制", "用于播种之后的社会体制，当研究量子制造以后立刻进行切换。可以与上面的社会体制相同。", governmentOptions);
 
-        let governorsOptions = [{val: "none", label: "None", hint: "Do not select governor"}, ...governors.map(id => ({val: id, label: game.loc(`governor_${id}`), hint: game.loc(`governor_${id}_desc`)}))];
-        addSettingsSelect(currentNode, "govGovernor", "Governor", "Chosen governor will be appointed.", governorsOptions);
+        let governorsOptions = [{val: "none", label: "无", hint: "不选择总督"}, ...governors.map(id => ({val: id, label: game.loc(`governor_${id}`), hint: game.loc(`governor_${id}_desc`)}))];
+        addSettingsSelect(currentNode, "govGovernor", "总督", "将使用选中的总督。", governorsOptions);
 
         document.documentElement.scrollTop = document.body.scrollTop = currentScrollPosition;
     }
 
     function buildEvolutionSettings() {
         let sectionId = "evolution";
-        let sectionName = "Evolution";
+        let sectionName = "进化";
 
         let resetFunction = function() {
             resetEvolutionSettings(true);
@@ -12762,11 +12878,11 @@
         if (race && race.getCondition() !== '') {
             let suited = race.getHabitability();
             if (suited === 1) {
-                $("#script_race_warning").html(`<span class="has-text-success">This race have special requirements: ${race.getCondition()}. This condition is met.</span>`);
+                $("#script_race_warning").html(`<span class="has-text-success">此种族的特殊要求为： ${race.getCondition()}。当前满足此条件。</span>`);
             } else if (suited === 0) {
-                $("#script_race_warning").html(`<span class="has-text-danger">Warning! This race have special requirements: ${race.getCondition()}. This condition is not met.</span>`);
+                $("#script_race_warning").html(`<span class="has-text-danger">警告！此种族的特殊要求为： ${race.getCondition()}。当前不满足此条件。</span>`);
             } else {
-                $("#script_race_warning").html(`<span class="has-text-warning">Warning! This race have special requirements: ${race.getCondition()}. This condition is bypassed. Race will have ${100 - suited * 100}% penalty.</span>`);
+                $("#script_race_warning").html(`<span class="has-text-warning">警告！此种族的特殊要求为： ${race.getCondition()}。当前可使用此种族，但受到 ${100 - suited * 100}% 的产量惩罚。</span>`);
             }
         } else {
             $("#script_race_warning").empty();
@@ -12780,22 +12896,22 @@
         currentNode.empty().off("*");
 
         // Target universe
-        let universeOptions = [{val: "none", label: "None", hint: "Wait for user selection"},
+        let universeOptions = [{val: "none", label: "无", hint: "等待玩家选择"},
                                ...universes.map(id => ({val: id, label: game.loc(`universe_${id}`), hint: game.loc(`universe_${id}_desc`)}))];
-        addSettingsSelect(currentNode, "userUniverseTargetName", "Target Universe", "Chosen universe will be automatically selected after appropriate reset", universeOptions);
+        addSettingsSelect(currentNode, "userUniverseTargetName", "欲选择的宇宙", "在特定重置后自动选择相应的宇宙", universeOptions);
 
         // Target planet
-        let planetOptions = [{val: "none", label: "None", hint: "Wait for user selection"},
-                             {val: "habitable", label: "Most habitable", hint: "Picks most habitable planet, based on biome and trait"},
-                             {val: "achieve", label: "Most achievements", hint: "Picks planet with most unearned achievements. Takes in account extinction achievements for planet exclusive races, and greatness achievements for planet biome, trait, and exclusive genus."},
-                             {val: "weighting", label: "Highest weighting", hint: "Picks planet with highest weighting. Should be configured in Planet Weighting Settings section."}];
-        addSettingsSelect(currentNode, "userPlanetTargetName", "Target Planet", "Chosen planet will be automatically selected after appropriate reset", planetOptions);
+        let planetOptions = [{val: "none", label: "无", hint: "等待玩家选择"},
+                             {val: "habitable", label: "最宜居", hint: "根据生物群系和星球特性，选择最佳的星球"},
+                             {val: "achieve", label: "最多成就", hint: "选择可以尽可能多完成成就的星球。将考虑毁灭类成就中星球特有的种族，以及伟大类成就中生物群系，星球特征和特有的种群。"},
+                             {val: "weighting", label: "最高权重", hint: "选择星球权重最高的星球。可以在下面的星球权重设置中进行更进一步的设置。"}];
+        addSettingsSelect(currentNode, "userPlanetTargetName", "欲选择的星球", "在特定重置后自动选择相应的星球", planetOptions);
 
         // Target evolution
-        let raceOptions = [{val: "auto", label: "Auto Achievements", hint: "Picks race giving most achievements upon completing run. Tracks all achievements limited to specific races and resets. Races unique to current planet biome are prioritized, when available."},
+        let raceOptions = [{val: "auto", label: "自动完成成就", hint: "优先选择可以获得更多成就的种族，会将所有种族和种群限定，或是重置方式限定的成就纳入考虑。生物群系特有的种族如果可以选择，将优先进行选择。"},
                            ...Object.values(races).map(race => (
                            {val: race.id, label: race.name, hint: race.desc}))];
-        addSettingsSelect(currentNode, "userEvolutionTarget", "Target Race", "Chosen race will be automatically selected during next evolution", raceOptions)
+        addSettingsSelect(currentNode, "userEvolutionTarget", "欲进化的种族", "下个进化阶段自动选择相应的种族", raceOptions)
           .on('change', 'select', function() {
             state.evolutionTarget = null;
             updateRaceWarning();
@@ -12808,8 +12924,8 @@
         currentNode.append(`<div><span id="script_race_warning"></span></div>`);
         updateRaceWarning();
 
-        addSettingsToggle(currentNode, "evolutionAutoUnbound", "Allow unbound races", "Allow Auto Achievement to pick biome restricted races on unsuited biomes, after getting unbound.");
-        addSettingsToggle(currentNode, "evolutionBackup", "Soft Reset", "Perform soft resets until you'll get chosen race. Have no effect after getting mass exintion perk.");
+        addSettingsToggle(currentNode, "evolutionAutoUnbound", "是否允许选择不匹配种族", "获得相应鲜血灌注升级(自由、暗影战争)后，允许自动完成成就选择不匹配当前星球环境的种族。");
+        addSettingsToggle(currentNode, "evolutionBackup", "是否进行软重置", "直到选中想要选择的种族之前一直进行软重置。在获得大灭绝特权后就没有必要选择了。");
 
         // Challenges
         for (let i = 0; i < challenges.length; i++) {
@@ -12819,29 +12935,29 @@
               set.map(c => game.loc(`evo_challenge_${c.id}_effect`)).join("&#xA;"));
         }
 
-        addStandardHeading(currentNode, "Evolution Queue");
-        addSettingsToggle(currentNode, "evolutionQueueEnabled", "Queue Enabled", "When enabled script with evolve with queued settings, from top to bottom. During that script settings will be overriden with settings stored in queue. Queued target will be removed from list after evolution.");
-        addSettingsToggle(currentNode, "evolutionQueueRepeat", "Repeat Queue", "When enabled applied evolution targets will be moved to the end of queue, instead of being removed");
+        addStandardHeading(currentNode, "进化队列");
+        addSettingsToggle(currentNode, "evolutionQueueEnabled", "是否开启进化队列", "按照队列从上至下进行进化。队列中有项目存在时，优先于脚本的进化设置生效。在完成进化后，相应的队列项目将被移除。");
+        addSettingsToggle(currentNode, "evolutionQueueRepeat", "是否重复队列", "开启后，队列中的项目在完成进化后将回到队列末尾，而不是被移除");
 
 
         currentNode.append(`
           <div style="margin-top: 5px; display: inline-block; width: 90%; text-align: left;">
-            <label for="script_evolution_prestige">Prestige for new evolutions:</label>
+            <label for="script_evolution_prestige">新一轮进化使用的威望重置类型：</label>
             <select id="script_evolution_prestige" style="height: 18px; width: 150px; float: right;">
-              <option value = "auto" title = "Inherited from current Prestige Settings">Current Prestige</option>
+              <option value = "auto" title = "与当前的威望重置类型一致">当前的威望重置类型</option>
               ${prestigeOptions}
             </select>
           </div>
           <div style="margin-top: 10px;">
-            <button id="script_evlution_add" class="button">Add New Evolution</button>
+            <button id="script_evlution_add" class="button">添加进化队列</button>
           </div>`);
 
         $("#script_evlution_add").on("click", addEvolutionSetting);
         currentNode.append(`
           <table style="width:100%">
             <tr>
-              <th class="has-text-warning" style="width:25%">Race</th>
-              <th class="has-text-warning" style="width:70%" title="Settings applied before evolution. Changed settings not limited to initial template, you can manually add any script options to JSON.">Settings</th>
+              <th class="has-text-warning" style="width:25%">种族</th>
+              <th class="has-text-warning" style="width:70%" title="进化之前生效的设置。不仅限于模板，您还可以将其他的脚本设置以JSON形式输入。">设置</th>
               <th style="width:5%"></th>
             </tr>
             <tbody id="script_evolutionQueueTable"></tbody>
@@ -12888,11 +13004,11 @@
                 }
             }
         } else if (queuedEvolution.userEvolutionTarget === "auto") {
-            raceName = "Auto Achievements";
+            raceName = "自动完成成就";
         } else if (race) {
             raceName = race.name;
         } else {
-            raceName = "Unrecognized race!";
+            raceName = "种族无法识别！";
         }
 
         if (race) {
@@ -12920,7 +13036,7 @@
                 prestigeName = `(${prestigeNames[queuedEvolution.prestigeType]})`;
                 prestigeClass = "has-text-info";
             } else {
-                prestigeName = "Unrecognized prestige!";
+                prestigeName = "威望重置类型无法识别！";
                 prestigeClass = "has-text-danger";
             }
         }
@@ -12989,7 +13105,7 @@
 
     function buildPlanetSettings() {
         let sectionId = "planet";
-        let sectionName = "Planet Weighting";
+        let sectionName = "星球权重";
 
         let resetFunction = function() {
             resetPlanetSettings(true);
@@ -13007,15 +13123,15 @@
         currentNode.empty().off("*");
 
         currentNode.append(`
-          <span>Planet Weighting = Biome Weighting + Trait Weighting + (Extras Intensity * Extras Weightings)</span>
+          <span>星球权重 = 群系权重 + 特性权重 + (其他项数值 * 其他项权重)</span>
           <table style="width:100%">
             <tr>
-              <th class="has-text-warning" style="width:20%">Biome</th>
-              <th class="has-text-warning" style="width:calc(40% / 3)">Weighting</th>
-              <th class="has-text-warning" style="width:20%">Trait</th>
-              <th class="has-text-warning" style="width:calc(40% / 3)">Weighting</th>
-              <th class="has-text-warning" style="width:20%">Extra</th>
-              <th class="has-text-warning" style="width:calc(40% / 3)">Weighting</th>
+              <th class="has-text-warning" style="width:20%">群系</th>
+              <th class="has-text-warning" style="width:calc(40% / 3)">权重</th>
+              <th class="has-text-warning" style="width:20%">特性</th>
+              <th class="has-text-warning" style="width:calc(40% / 3)">权重</th>
+              <th class="has-text-warning" style="width:20%">其他</th>
+              <th class="has-text-warning" style="width:calc(40% / 3)">权重</th>
             </tr>
             <tbody id="script_planetTableBody"></tbody>
           </table>`);
@@ -13042,7 +13158,7 @@
             tableElement = tableElement.next();
 
             if (i < traitList.length) {
-                tableElement.append(buildTableLabel(i == 0 ? "None" : game.loc("planet_" + traitList[i])));
+                tableElement.append(buildTableLabel(i == 0 ? "无" : game.loc("planet_" + traitList[i])));
                 tableElement = tableElement.next();
                 addTableInput(tableElement, "trait_w_" + traitList[i]);
             } else {
@@ -13051,7 +13167,7 @@
             tableElement = tableElement.next();
 
             if (i < extraList.length) {
-                tableElement.append(buildTableLabel(extraList[i]));
+                tableElement.append(buildTableLabel(i == 0 ? "成就" : game.loc("resource_" + extraList[i] + "_name")));
                 tableElement = tableElement.next();
                 addTableInput(tableElement, "extra_w_" + extraList[i]);
             }
@@ -13062,7 +13178,7 @@
 
     function buildTriggerSettings() {
         let sectionId = "trigger";
-        let sectionName = "Trigger";
+        let sectionName = "触发器";
 
         let resetFunction = function() {
             resetTriggerSettings(true);
@@ -13082,22 +13198,22 @@
         let currentNode = $('#script_triggerContent');
         currentNode.empty().off("*");
 
-        currentNode.append('<div style="margin-top: 10px;"><button id="script_trigger_add" class="button">Add New Trigger</button></div>');
+        currentNode.append('<div style="margin-top: 10px;"><button id="script_trigger_add" class="button">添加新触发器</button></div>');
         $("#script_trigger_add").on("click", addTriggerSetting);
 
         currentNode.append(`
           <table style="width:100%">
             <tr>
-              <th class="has-text-warning" colspan="3">Requirement</th>
-              <th class="has-text-warning" colspan="5">Action</th>
+              <th class="has-text-warning" colspan="3">需求</th>
+              <th class="has-text-warning" colspan="5">行动</th>
             </tr>
             <tr>
-              <th class="has-text-warning" style="width:16%">Type</th>
+              <th class="has-text-warning" style="width:16%">类型</th>
               <th class="has-text-warning" style="width:18%">Id</th>
-              <th class="has-text-warning" style="width:11%">Count</th>
-              <th class="has-text-warning" style="width:16%">Type</th>
+              <th class="has-text-warning" style="width:11%">计数</th>
+              <th class="has-text-warning" style="width:16%">类型</th>
               <th class="has-text-warning" style="width:18%">Id</th>
-              <th class="has-text-warning" style="width:11%">Count</th>
+              <th class="has-text-warning" style="width:11%">计数</th>
               <th style="width:5%"></th>
               <th style="width:5%"></th>
             </tr>
@@ -13177,9 +13293,9 @@
         // Requirement Type
         let typeSelectNode = $(`
           <select>
-            <option value = "unlocked" title = "This condition is met when technology is shown in research tab">Unlocked</option>
-            <option value = "researched" title = "This condition is met when technology is researched">Researched</option>
-            <option value = "built" title = "This condition is met when you have 'count' or greater amount of buildings">Built</option>
+            <option value = "unlocked" title = "当相应研究解锁时，视为满足条件">解锁时</option>
+            <option value = "researched" title = "当进行相应研究后，视为满足条件">研究后</option>
+            <option value = "built" title = "当相应建筑的数量达到相应数值后，视为满足条件">建造时</option>
           </select>`);
         typeSelectNode.val(trigger.requirementType);
 
@@ -13229,9 +13345,9 @@
         // Action Type
         let typeSelectNode = $(`
           <select>
-            <option value = "research" title = "Research technology">Research</option>
-            <option value = "build" title = "Build buildings up to 'count' amount">Build</option>
-            <option value = "arpa" title = "Build projects up to 'count' amount">A.R.P.A.</option>
+            <option value = "research" title = "进行相应研究">研究</option>
+            <option value = "build" title = "建造建筑，数量上限为计数">建造</option>
+            <option value = "arpa" title = "建造ARPA项目，数量上限为计数">A.R.P.A.</option>
           </select>`);
         typeSelectNode.val(trigger.actionType);
 
@@ -13368,7 +13484,7 @@
 
     function buildResearchSettings() {
         let sectionId = "research";
-        let sectionName = "Research";
+        let sectionName = "研究";
 
         let resetFunction = function() {
             resetResearchSettings(true);
@@ -13388,25 +13504,25 @@
         currentNode.empty().off("*");
 
         // Theology 1
-        let theology1Options = [{val: "auto", label: "Script Managed", hint: "Picks Anthropology for MAD prestige, and Fanaticism for others. Achieve-worthy combos are exception, on such runs Fanaticism will be always picked."},
+        let theology1Options = [{val: "auto", label: "由脚本管理", hint: "进行核爆重置时选择人类学，其余情况下选择狂热信仰。需要狂热信仰祖先才能完成成就时例外，此时将一直选择狂热信仰。"},
                                 {val: "tech-anthropology", label: game.loc('tech_anthropology'), hint: game.loc('tech_anthropology_effect')},
                                 {val: "tech-fanaticism", label: game.loc('tech_fanaticism'), hint: game.loc('tech_fanaticism_effect')}];
-        addSettingsSelect(currentNode, "userResearchTheology_1", "Target Theology 1", "Theology 1 technology to research, have no effect after getting Transcendence perk", theology1Options);
+        addSettingsSelect(currentNode, "userResearchTheology_1", "神学研究分支1", "神学研究分支1的选择，获得超越特权以后失效", theology1Options);
 
         // Theology 2
-        let theology2Options = [{val: "auto", label: "Script Managed", hint: "Picks Deify for Ascension prestige, and Study for others"},
+        let theology2Options = [{val: "auto", label: "由脚本管理", hint: "进行飞升重置或恶魔灌注时选择神化先祖，其余情况下选择研究先祖"},
                                 {val: "tech-study", label: game.loc('tech_study'), hint: game.loc('tech_study_desc')},
                                 {val: "tech-deify", label: game.loc('tech_deify'), hint: game.loc('tech_deify_desc')}];
-        addSettingsSelect(currentNode, "userResearchTheology_2", "Target Theology 2", "Theology 2 technology to research", theology2Options);
+        addSettingsSelect(currentNode, "userResearchTheology_2", "神学研究分支2", "神学研究分支2的选择", theology2Options);
 
-        addSettingsList(currentNode, "researchIgnore", "Ignored researches", "Listed researches won't be purchased without manual input, or user defined trigger. On top of this list script will also ignore some other special techs, such as Limit Collider, Dark Energy Bomb, Exotic Infusion, etc.", techIds);
+        addSettingsList(currentNode, "researchIgnore", "忽略的研究", "脚本将不会进行相应的自动研究。部分特殊研究同样不会自动进行，例如限制对撞机，暗能量炸弹和奇异灌输等。", techIds);
 
         document.documentElement.scrollTop = document.body.scrollTop = currentScrollPosition;
     }
 
     function buildWarSettings(parentNode, secondaryPrefix) {
         let sectionId = "war";
-        let sectionName = "Foreign Affairs";
+        let sectionName = "外交事务";
 
         let resetFunction = function() {
             resetWarSettings(true);
@@ -13425,53 +13541,53 @@
         let currentNode = $(`#script_${secondaryPrefix}warContent`);
         currentNode.empty().off("*");
 
-        addSettingsHeader1(currentNode, "Foreign Powers");
-        addSettingsToggle(currentNode, "foreignPacifist", "Pacifist", "Turns attacks off and on");
+        addSettingsHeader1(currentNode, "外国势力相关");
+        addSettingsToggle(currentNode, "foreignPacifist", "是否为和平主义者", "是否进攻敌国");
 
-        addSettingsToggle(currentNode, "foreignUnification", "Perform unification", "Perform unification once all three powers are controlled. autoResearch should be enabled for this to work.");
-        addSettingsToggle(currentNode, "foreignOccupyLast", "Occupy last foreign power", "Occupy last foreign power once other two are controlled, and unification is researched to speed up unification. Disable if you want annex\\purchase achievements.");
-        addSettingsToggle(currentNode, "foreignForceSabotage", "Sabotage foreign power when useful", "Perform sabotage against current target if it's useful(power above 50), regardless of required power, and default action defined above");
-        addSettingsToggle(currentNode, "foreignTrainSpy", "Train spies", "Train spies to use against foreign powers");
-        addSettingsNumber(currentNode, "foreignSpyMax", "Maximum spies", "Maximum spies per foreign power");
+        addSettingsToggle(currentNode, "foreignUnification", "是否进行统一", "是否在控制了三个敌对国家后进行统一。需要开启自动研究后此项才能生效。");
+        addSettingsToggle(currentNode, "foreignOccupyLast", "是否占领最后一个未占领的国家", "当控制其他两个国家并研究统一后，自动占领最后一个国家。它可以加速统一。除非您是要做统一方式相关的成就，否则不建议关闭此项。");
+        addSettingsToggle(currentNode, "foreignForceSabotage", "在有必要的时候对敌对国家进行破坏行动", "在有需要的时候(军事力量大于50)，对当前的目标进行破坏行动。将无视下方选项的相应设置。");
+        addSettingsToggle(currentNode, "foreignTrainSpy", "派遣间谍", "训练间谍用于在外国势力执行任务");
+        addSettingsNumber(currentNode, "foreignSpyMax", "最大间谍数", "每个敌对国家最多训练的间谍数");
 
-        addSettingsNumber(currentNode, "foreignPowerRequired", "Military Power to switch target", "Switches to attack next foreign power once its power lowered down to this number. When exact numbers not know script tries to approximate it.");
+        addSettingsNumber(currentNode, "foreignPowerRequired", "改变目标至少需要的军事力量", "当一个国家的军事实力低于此数值时，转为攻击它。如果确切数字无法看到，则脚本会尝试进行估计。");
 
-        let policyOptions = [{val: "Ignore", label: "Ignore", hint: ""},
+        let policyOptions = [{val: "Ignore", label: "忽略", hint: ""},
                              ...Object.entries(SpyManager.Types).map(([name, task]) => (
                              {val: name, label: game.loc("civics_spy_" + task.id), hint: ""})),
-                             {val: "Occupy", label: "Occupy", hint: ""}];
-        addSettingsSelect(currentNode, "foreignPolicyInferior", "Inferior Power", "Perform this against inferior foreign power, with military power equal or below given threshold. Complex actions includes required preparation - Annex and Purchase will incite and influence, Occupy will sabotage, until said options will be available.", policyOptions);
-        addSettingsSelect(currentNode, "foreignPolicySuperior", "Superior Power", "Perform this against superior foreign power, with military power above given threshold. Complex actions includes required preparation - Annex and Purchase will incite and influence, Occupy will sabotage, until said options will be available.", policyOptions);
+                             {val: "Occupy", label: "占领", hint: ""}];
+        addSettingsSelect(currentNode, "foreignPolicyInferior", "对较弱小的国家进行的间谍行动", "对较弱小的国家进行的间谍行动类型，较弱小指军事力量不高于上方数值的国家。复杂的行动将首先进行相应的准备——吞并和收购将先进行煽动和亲善，占领将先进行破坏，直到相应的选项可用为止。", policyOptions);
+        addSettingsSelect(currentNode, "foreignPolicySuperior", "对较强大的国家进行的间谍行动", "对较强大的国家进行的间谍行动类型，较强大指军事力量高于上方数值的国家。复杂的行动将首先进行相应的准备——吞并和收购将先进行煽动和亲善，占领将先进行破坏，直到相应的选项可用为止。", policyOptions);
 
-        let rivalOptions = [{val: "Ignore", label: "Ignore", hint: "Does nothing"},
-                            {val: "Influence", label: "Alliance", hint: "Influence rival up to best relations"},
-                            {val: "Sabotage", label: "War", hint: "Sabotage and plunder rival"},
-                            {val: "Betrayal", label: "Betrayal", hint: "Influence rival up to best relations, and start sabotaging. Once military power reached minimum - start plundering it"}];
-        addSettingsSelect(currentNode, "foreignPolicyRival", "Rival Power (The True Path)", "Perform this against rival foreign power.", rivalOptions);
+        let rivalOptions = [{val: "Ignore", label: "忽略", hint: "什么都不做"},
+                            {val: "Influence", label: "联盟", hint: "一直进行亲善行动，直到双边关系达到最大"},
+                            {val: "Sabotage", label: "战斗", hint: "进行破坏行动，并对他们进行攻击"},
+                            {val: "Betrayal", label: "背刺", hint: "进行亲善行动，直到双边关系达到最大，然后开始破坏行动。当该国军事力量达到最小时，开始对他们进行攻击"}];
+        addSettingsSelect(currentNode, "foreignPolicyRival", "竞争国家(智械黎明模式)", "对竞争国家进行的间谍行动类型。", rivalOptions);
 
         // Campaign panel
-        addSettingsHeader1(currentNode, "Campaigns");
-        addSettingsNumber(currentNode, "foreignAttackLivingSoldiersPercent", "Minimum percentage of alive soldiers for attack", "Only attacks if you ALSO have the target battalion size of healthy soldiers available, so this setting will only take effect if your battalion does not include all of your soldiers");
-        addSettingsNumber(currentNode, "foreignAttackHealthySoldiersPercent", "Minimum percentage of healthy soldiers for attack", "Set to less than 100 to take advantage of being able to heal more soldiers in a game day than get wounded in a typical attack");
-        addSettingsNumber(currentNode, "foreignHireMercMoneyStoragePercent", "Hire mercenary if money storage greater than percent", "Hire a mercenary if remaining money after purchase will be greater than this percent");
-        addSettingsNumber(currentNode, "foreignHireMercCostLowerThanIncome", "OR if cost lower than money earned in X seconds", "Combines with the money storage percent setting to determine when to hire mercenaries");
-        addSettingsNumber(currentNode, "foreignHireMercDeadSoldiers", "AND amount of dead soldiers above this number", "Hire a mercenary only when current amount of dead soldiers above given number");
+        addSettingsHeader1(currentNode, "战役相关");
+        addSettingsNumber(currentNode, "foreignAttackLivingSoldiersPercent", "只在士兵生存人数大于此比例时进攻", "下方的未受伤士兵比例也会生效，因此只在未让所有士兵进攻时生效");
+        addSettingsNumber(currentNode, "foreignAttackHealthySoldiersPercent", "只在未受伤士兵人数大于此比例时进攻", "合理设置为某个低于100的值，可以有效利用游戏内的自然愈合机制");
+        addSettingsNumber(currentNode, "foreignHireMercMoneyStoragePercent", "如果资金存量大于此比例，则聘请雇佣兵", "如果聘请后剩余资金大于此比例，则聘请雇佣兵");
+        addSettingsNumber(currentNode, "foreignHireMercCostLowerThanIncome", "或者聘请花费小于此秒数的资金产量，则聘请雇佣兵", "结合剩余资金比例，可以管理聘请雇佣兵的时机");
+        addSettingsNumber(currentNode, "foreignHireMercDeadSoldiers", "并且需要阵亡士兵数量大于此数值，才会聘请雇佣兵", "只在阵亡士兵数量超过此数值时聘请雇佣兵");
 
-        addSettingsNumber(currentNode, "foreignMinAdvantage", "Minimum advantage", "Minimum advantage to launch campaign, ignored during ambushes. 100% chance to win will be reached at approximately(influenced by traits and selected campaign) 75% advantage.");
-        addSettingsNumber(currentNode, "foreignMaxAdvantage", "Maximum advantage", "Once campaign is selected, your battalion will be limited in size down to this advantage, reducing potential loses");
-        addSettingsNumber(currentNode, "foreignMaxSiegeBattalion", "Maximum siege battalion", "Maximum battalion for siege campaign. Only try to siege if it's possible with up to given amount of soldiers. Siege is expensive, if you'll be doing it with too big battalion it might be less profitable than other combat campaigns. This option does not applied to unifying sieges, it affect only looting.");
+        addSettingsNumber(currentNode, "foreignMinAdvantage", "最低优势", "进行相应战役类型最少需要的优势。进行伏击时忽略此项。大概在75%优势(受特质和战役类型影响)附近可以做到100%胜率。");
+        addSettingsNumber(currentNode, "foreignMaxAdvantage", "最高优势", "当选择相应战役类型后，参加战斗的士兵数将限制在尽可能接近此优势的数量，以减少损失");
+        addSettingsNumber(currentNode, "foreignMaxSiegeBattalion", "最高围城士兵数", "进行围城的最大士兵数。只在此数值的士兵数量可以进行围城时这么做。围城的损失通常很大，如果需要大量士兵才能进行的话，收益将无法弥补损失。此项不影响统一时的围城士兵数。");
 
-        let protectOptions = [{val: "never", label: "Never", hint: "No additional limits to battalion size. Always send maximum soldiers allowed with current Max Advantage."},
-                              {val: "always", label: "Always", hint: "Limit battalions to sizes which will neven suffer any casualties in successful fights. You still will lose soldiers after failures, increasing minimum advantage can improve winning odds. This option designed to use with armored races favoring frequent attacks, with no approppriate build it may prevent any attacks from happening."},
-                              {val: "auto", label: "Auto", hint: "Tries to maximize total number of attacks, alternating between full and safe attacks based on soldiers condition, to get most from both healing and recruiting."}];
-        addSettingsSelect(currentNode, "foreignProtect", "Protect soldiers", "Configures safety of attacks. This option does not applies to unifying sieges, it affect only looting.", protectOptions);
+        let protectOptions = [{val: "never", label: "永不", hint: "不限制参加战斗的士兵数。永远尽可能使用最高优势对应的士兵数。"},
+                              {val: "always", label: "常时", hint: "将参加战斗的士兵数限制为战斗胜利后不损失任何士兵的数值。战败则仍然可能损失士兵，此时提升最低优势可以增加胜率。此项是供有装甲相关特质的种族优化进攻频率使用，如果设置不当，可能会导致士兵永远不进攻。"},
+                              {val: "auto", label: "自动", hint: "尽可能增加战斗总次数，根据士兵情况，自动在前两个选项之间切换，以优化战斗结果。"}];
+        addSettingsSelect(currentNode, "foreignProtect", "是否保护士兵", "设置士兵攻击的烈度。此项不影响统一时的围城士兵数。", protectOptions);
 
         document.documentElement.scrollTop = document.body.scrollTop = currentScrollPosition;
     }
 
     function buildHellSettings(parentNode, secondaryPrefix) {
         let sectionId = "hell";
-        let sectionName = "Hell";
+        let sectionName = "地狱维度";
 
         let resetFunction = function() {
             resetHellSettings(true);
@@ -13491,39 +13607,39 @@
         currentNode.empty().off("*");
 
         // Entering Hell
-        addSettingsHeader1(currentNode, "Entering Hell");
-        addSettingsNumber(currentNode, "hellHomeGarrison", "Soldiers to stay out of hell", "Home garrison maximum");
-        addSettingsNumber(currentNode, "hellMinSoldiers", "Minimum soldiers to be available for hell (pull out if below)", "Don't enter hell if not enough soldiers, or get out if already in");
-        addSettingsNumber(currentNode, "hellMinSoldiersPercent", "Alive soldier percentage for entering hell", "Don't enter hell if too many soldiers are dead, but don't get out");
+        addSettingsHeader1(currentNode, "进入地狱维度");
+        addSettingsNumber(currentNode, "hellHomeGarrison", "不进入地狱维度的士兵人数", "驻军上限");
+        addSettingsNumber(currentNode, "hellMinSoldiers", "进入地狱维度最少士兵总数(低于此值时撤出)", "如果士兵不足，不进入地狱维度，如果已经进入，则撤出所有士兵");
+        addSettingsNumber(currentNode, "hellMinSoldiersPercent", "进入地狱维度需拥有生存士兵的比例", "如果阵亡士兵过多，不进入地狱维度，但不会撤出士兵");
 
         // Hell Garrison
-        addSettingsHeader1(currentNode, "Hell Garrison");
-        addSettingsNumber(currentNode, "hellTargetFortressDamage", "Target wall damage per siege (overestimates threat)", "Actual damage will usually be lower due to patrols and drones");
-        addSettingsNumber(currentNode, "hellLowWallsMulti", "Garrison bolster factor for damaged walls", "Multiplies target defense rating by this when close to 0 wall integrity, half as much increase at half integrity");
+        addSettingsHeader1(currentNode, "地狱维度驻扎士兵");
+        addSettingsNumber(currentNode, "hellTargetFortressDamage", "围攻后城墙耐久减少为相应数值(尽量高估威胁)", "实际上由于有巡逻队和机器人，耐久不会减少那么多");
+        addSettingsNumber(currentNode, "hellLowWallsMulti", "受损城墙驻扎士兵增援因子", "当城墙剩余耐久接近0时，将堡垒防御评级增强到乘以此因子的数值，城墙剩余耐久为一半时，增强到乘以此因子一半的数值");
 
         // Patrol size
-        addSettingsHeader1(currentNode, "Patrol Size");
-        addSettingsToggle(currentNode, "hellHandlePatrolSize", "Automatically adjust patrol size", "Sets patrol attack rating based on current threat, lowers it depending on buildings, increases it to the minimum rating, and finally increases it based on dead soldiers. Handling patrol count has to be turned on.");
-        addSettingsNumber(currentNode, "hellPatrolMinRating", "Minimum patrol attack rating", "Will never go below this");
-        addSettingsNumber(currentNode, "hellPatrolThreatPercent", "Percent of current threat as base patrol rating", "Demon encounters have a rating of 2 to 10 percent of current threat");
-        addSettingsNumber(currentNode, "hellPatrolDroneMod", "&emsp;Lower Rating for each active Predator Drone by", "Predators reduce threat before patrols fight");
-        addSettingsNumber(currentNode, "hellPatrolDroidMod", "&emsp;Lower Rating for each active War Droid by", "War Droids boost patrol attack rating by 1 or 2 soldiers depending on tech");
-        addSettingsNumber(currentNode, "hellPatrolBootcampMod", "&emsp;Lower Rating for each Bootcamp by", "Bootcamps help regenerate soldiers faster");
-        addSettingsNumber(currentNode, "hellBolsterPatrolRating", "Increase patrol rating by up to this when soldiers die", "Larger patrols are less effective, but also have fewer deaths");
-        addSettingsNumber(currentNode, "hellBolsterPatrolPercentTop", "&emsp;Start increasing patrol rating at this home garrison fill percent", "This is the higher number");
-        addSettingsNumber(currentNode, "hellBolsterPatrolPercentBottom", "&emsp;Full patrol rating increase below this home garrison fill percent", "This is the lower number");
+        addSettingsHeader1(currentNode, "巡逻队规模");
+        addSettingsToggle(currentNode, "hellHandlePatrolSize", "自动调整巡逻队规模", "根据当前恶魔生物数量调整巡逻队规模，建筑作用下将减少之，低于最低战斗评级及士兵阵亡时将增加之。必须开启调整巡逻队数量。");
+        addSettingsNumber(currentNode, "hellPatrolMinRating", "单支巡逻队最低战斗评级", "不会低于此数值");
+        addSettingsNumber(currentNode, "hellPatrolThreatPercent", "恶魔生物基础评级与数量比例", "作为参考，每次激战的恶魔评级为当前恶魔数量的2%至10%");
+        addSettingsNumber(currentNode, "hellPatrolDroneMod", "&emsp;每个掠食者无人机减少恶魔生物评级", "掠食者无人机在巡逻队战斗前就减少恶魔生物数量");
+        addSettingsNumber(currentNode, "hellPatrolDroidMod", "&emsp;每个战斗机器人减少恶魔生物评级", "根据研究情况，战斗机器人可以增加1至2名士兵的巡逻队战斗评级");
+        addSettingsNumber(currentNode, "hellPatrolBootcampMod", "&emsp;每个新兵训练营减少恶魔生物评级", "新兵训练营使士兵更快完成训练");
+        addSettingsNumber(currentNode, "hellBolsterPatrolRating", "士兵阵亡时增加此战斗评级数值的巡逻队", "更大的巡逻队效率更低，但阵亡也更少");
+        addSettingsNumber(currentNode, "hellBolsterPatrolPercentTop", "&emsp;当驻军到达此比例时开始增加巡逻队战斗评级", "较高数值");
+        addSettingsNumber(currentNode, "hellBolsterPatrolPercentBottom", "&emsp;当驻军低于此比例时将巡逻队战斗评级增加到最大", "较低数值");
 
         // Attractors
-        addSettingsHeader1(currentNode, "Attractors");
-        addSettingsNumber(currentNode, "hellAttractorBottomThreat", "&emsp;All Attractors on below this threat", "Turn more and more attractors off when getting nearer to the top threat. Auto Power needs to be on for this to work.");
-        addSettingsNumber(currentNode, "hellAttractorTopThreat", "&emsp;All Attractors off above this threat", "Turn more and more attractors off when getting nearer to the top threat. Auto Power needs to be on for this to work.");
+        addSettingsHeader1(currentNode, "吸引器信标");
+        addSettingsNumber(currentNode, "hellAttractorBottomThreat", "&emsp;恶魔生物数量低于此数值时开启所有吸引器信标", "越接近最大恶魔数量，关闭越多吸引器信标。需要开启自动供能此项才能生效。");
+        addSettingsNumber(currentNode, "hellAttractorTopThreat", "&emsp;恶魔生物数量高于此数值时关闭所有吸引器信标", "越接近最大恶魔数量，关闭越多吸引器信标。需要开启自动供能此项才能生效。");
 
         document.documentElement.scrollTop = document.body.scrollTop = currentScrollPosition;
     }
 
     function buildFleetSettings(parentNode, secondaryPrefix) {
         let sectionId = "fleet";
-        let sectionName = "Fleet";
+        let sectionName = "舰队";
 
         let resetFunction = function() {
             resetFleetSettings(true);
@@ -13549,14 +13665,14 @@
     }
 
     function updateFleetOuter(currentNode, secondaryPrefix) {
-        addStandardHeading(currentNode, "Outer Solar");
-        addSettingsNumber(currentNode, "fleetOuterCrew", "Minimum idle soldiers", "Only build ships when amount of idle soldiers above give number.");
-        addSettingsNumber(currentNode, "fleetOuterMinSyndicate", "Minimum syndicate", "Send ships only to regions with syndicate activity above given level.");
+        addStandardHeading(currentNode, "太阳系外围");
+        addSettingsNumber(currentNode, "fleetOuterCrew", "空闲士兵下限", "只在空闲士兵数量大于此数值时建造舰船。");
+        addSettingsNumber(currentNode, "fleetOuterMinSyndicate", "辛迪加战力下限", "只对辛迪加战力超过相应数值的区域派遣舰船。");
 
-        let shipOptions = [{val: "none", label: "None", hint: "Ship buildign disabled"},
-                           {val: "user", label: "Current design", hint: "Build whatever currently set in Ship Yard"},
-                           {val: "custom", label: "Preset", hint: "Build ships with components configured below. All components need to be unlocked, and resulting design should have enough power"}];
-        addSettingsSelect(currentNode, "fleetOuterShips", "Ships to build", "Once avalable and affordable script will build ship of selected design, and send it to region with most piracy * weighting", shipOptions);
+        let shipOptions = [{val: "none", label: "无", hint: "不建造舰船"},
+                           {val: "user", label: "当前设计", hint: "按照船坞当前的设计来建造舰船"},
+                           {val: "custom", label: "预设", hint: "按照下方的组件配置来建造舰船。所有的组件必须都解锁了，而且最终设计的动力必须足够"}];
+        addSettingsSelect(currentNode, "fleetOuterShips", "舰船建造类型", "当舰船可以建造时，脚本将按照选项建造舰船，并派往 敌人战力*权重 最高的地区", shipOptions);
         for (let [type, parts] of Object.entries(FleetManagerOuter.ShipConfig)) {
             let partOptions = parts.map(id => ({val: id, label: game.loc(`outer_shipyard_${type}_${id}`)}));
             addSettingsSelect(currentNode, `fleet_outer_${type}`, game.loc(`outer_shipyard_${type}`), "Preset ship component", partOptions);
@@ -13565,8 +13681,8 @@
         currentNode.append(`
           <table style="width:100%; text-align: left">
             <tr>
-              <th class="has-text-warning" style="width:55%">Region</th>
-              <th class="has-text-warning" style="width:20%">Weighting</th>
+              <th class="has-text-warning" style="width:55%">地区</th>
+              <th class="has-text-warning" style="width:20%">权重</th>
               <th style="width:25%"></th>
             </tr>
             <tbody id="script_${secondaryPrefix}fleetOuterTable"></tbody>
@@ -13600,24 +13716,24 @@
     }
 
     function updateFleetAndromeda(currentNode, secondaryPrefix) {
-        addStandardHeading(currentNode, "Andromeda");
-        addSettingsToggle(currentNode, "fleetMaxCover", "Maximize protection of prioritized systems", "Adjusts ships distribution to fully supress piracy in prioritized regions. Some potential defence will be wasted, as it will use big ships to cover small holes, when it doesn't have anything fitting better. This option is not required: all your dreadnoughts still will be used even without this option.");
-        addSettingsNumber(currentNode, "fleetEmbassyKnowledge", "Mininum knowledge for Embassy", "Building Embassy increases maximum piracy up to 100, script won't Auto Build it until this knowledge cap is reached.");
-        addSettingsNumber(currentNode, "fleetAlienGiftKnowledge", "Mininum knowledge for Alien Gift", "Researching Alien Gift increases maximum piracy up to 250, script won't Auto Research it until this knowledge cap is reached.");
-        addSettingsNumber(currentNode, "fleetAlien2Knowledge", "Mininum knowledge for Alien 2 Assault", "Assaulting Alien 2 increases maximum piracy up to 500, script won't do it until this knowledge cap is reached. Regardless of set value it won't ever try to assault until you have big enough fleet to do it without loses.");
+        addStandardHeading(currentNode, "仙女座星云");
+        addSettingsToggle(currentNode, "fleetMaxCover", "优先级高的地区尽可能最大化保护", "会优先分配舰船给优先级高的地区以完全压制相应地区的海盗活动。可能会在大船较多小船较少时浪费舰船。即使不开启此项，无畏舰仍然会正常进行分配。");
+        addSettingsNumber(currentNode, "fleetEmbassyKnowledge", "建造大使馆的知识阈值", "建造大使馆后，海盗的活动会更加剧烈，因此脚本只会在到达相应数值的知识上限时进行建造。");
+        addSettingsNumber(currentNode, "fleetAlienGiftKnowledge", "研究外星礼物的知识阈值", "研究外星礼物后，海盗的活动会更加剧烈，因此脚本只会在到达相应数值的知识上限时进行研究。");
+        addSettingsNumber(currentNode, "fleetAlien2Knowledge", "进行第五星系任务的知识阈值", "进行第五星系任务后，海盗的活动会更加剧烈，因此脚本只会在到达相应数值的知识上限时进行研究。另外，除非您能够无损伤地完成任务，否则脚本也不会自动进行此任务。");
 
-        let assaultOptions = [{val: "ignore", label: "Manual assault", hint: "Won't ever launch assault mission on Chthonian"},
-                              {val: "high", label: "High casualties", hint: "Unlock Chthonian using mixed fleet, high casualties (1250+ total fleet power, 500 will be lost)"},
-                              {val: "avg", label: "Average casualties", hint: "Unlock Chthonian using mixed fleet, average casualties (2500+ total fleet power, 160 will be lost)"},
-                              {val: "low", label: "Low casualties", hint: "Unlock Chthonian using mixed fleet, low casualties (4500+ total fleet power, 80 will be lost)"},
-                              {val: "frigate", label: "Frigate", hint: "Unlock Chthonian loosing Frigate ship(s) (4500+ total fleet power, suboptimal for banana\\instinct runs)"},
-                              {val: "dread", label: "Dreadnought", hint: "Unlock Chthonian with Dreadnought suicide mission"}];
-        addSettingsSelect(currentNode, "fleetChthonianLoses", "Chthonian Mission", "Assault Chthonian when chosen outcome is achievable. Mixed fleet formed to clear mission with minimum possible wasted ships, e.g. for low causlities it can sacriface 8 scouts, or 2 corvettes and 2 scouts, or frigate, and such. Whatever will be first available. It also takes in account perks and challenges, adjusting fleet accordingly.", assaultOptions);
+        let assaultOptions = [{val: "ignore", label: "不自动进行", hint: "不会自动进行幽冥星系任务"},
+                              {val: "high", label: "严重损失", hint: "使用混合舰队进行幽冥星系任务，损失极大(1250以上总战力，损失500左右战力的舰队)"},
+                              {val: "avg", label: "一般损失", hint: "使用混合舰队进行幽冥星系任务，损失一般(2500以上总战力，损失160左右战力的舰队)"},
+                              {val: "low", label: "低损失", hint: "使用混合舰队进行幽冥星系任务，损失低(4500以上总战力，损失80左右战力的舰队)"},
+                              {val: "frigate", label: "损失大型护卫舰", hint: "只损失大型护卫舰进行幽冥星系任务(4500以上总战力，对于香蕉共和国挑战或直觉特质的种族更好一些)"},
+                              {val: "dread", label: "损失无畏舰", hint: "看着无畏舰燃烧吧"}];
+        addSettingsSelect(currentNode, "fleetChthonianLoses", "幽冥星系任务条件", "当满足任务条件时自动进行幽冥星系任务。尽可能以最小的浪费组成混合舰队来完成任务，例如，低损失条件下，它可能派遣8艘侦察舰，或2艘小型护卫舰和2艘侦察舰，或1艘大型护卫舰，等等。无论如何，它会尽可能少损失舰队，同时会考虑特权和挑战来调整舰队。", assaultOptions);
 
         currentNode.append(`
           <table style="width:100%; text-align: left">
             <tr>
-              <th class="has-text-warning" style="width:95%">Region</th>
+              <th class="has-text-warning" style="width:95%">地区</th>
               <th style="width:5%"></th>
             </tr>
             <tbody id="script_${secondaryPrefix}fleetTableBody"></tbody>
@@ -13635,8 +13751,8 @@
         // Build all other productions settings rows
         for (let i = 0; i < galaxyRegions.length; i++) {
             let fleetElement = $(`#script_${secondaryPrefix}fleet_${galaxyRegions[i]}`);
-            let nameRef = galaxyRegions[i] === "gxy_alien1" ? "Alien 1 System"
-                        : galaxyRegions[i] === "gxy_alien2" ? "Alien 2 System"
+            let nameRef = galaxyRegions[i] === "gxy_alien1" ? "第四星系"
+                        : galaxyRegions[i] === "gxy_alien2" ? "第五星系"
                         : game.actions.galaxy[galaxyRegions[i]].info.name;
 
             fleetElement.append(buildTableLabel(typeof nameRef === "function" ? nameRef() : nameRef));
@@ -13661,7 +13777,7 @@
 
     function buildMechSettings() {
         let sectionId = "mech";
-        let sectionName = "Mech & Spire";
+        let sectionName = "机甲及尖塔";
 
         let resetFunction = function() {
             resetMechSettings(true);
@@ -13681,56 +13797,56 @@
         let currentNode = $('#script_mechContent');
         currentNode.empty().off("*");
 
-        let scrapOptions = [{val: "none", label: "None", hint: "Nothing will be scrapped automatically"},
-                            {val: "single", label: "Full bay", hint: "Scrap mechs only when mech bay is full, and script need more room to build mechs"},
-                            {val: "all", label: "All inefficient", hint: "Scrap all inefficient mechs immediately, using refounded resources to build better ones"},
-                            {val: "mixed", label: "Excess inefficient", hint: "Scrap as much inefficient mechs as possible, trying to preserve just enough of old mechs to fill bay to max by the time when next floor will be reached, calculating threshold based on progress speed and resources incomes"}];
-        addSettingsSelect(currentNode, "mechScrap", "Scrap mechs", "Configures what will be scrapped. Infernal mechs won't ever be scrapped.", scrapOptions);
-        addSettingsNumber(currentNode, "mechScrapEfficiency", "Scrap efficiency", "Scrap mechs only when '((OldMechRefund / NewMechCost) / (OldMechDamage / NewMechDamage))' more than given number.&#xA;For the cases when exchanged mechs have same size(1/3 refund) it means that with 1 eff. script allowed to scrap mechs under 33.3%. 1.5 eff. - under 22.2%, 2 eff. - under 16.6%, 0.5 eff. - under 66.6%, 0 eff. - under 100%, etc.&#xA;Efficiency below '1' is not recommended, unless scrap set to 'Full bay', as it's a breakpoint when refunded resources can immidiately compensate lost damage, resulting with best damage growth rate.&#xA;Efficiency above '1' is useful to save resources for more desperate times, or to compensate low soul gems income.");
-        addSettingsNumber(currentNode, "mechCollectorValue", "Collector value", "Collectors can't be directly compared with combat mechs, having no firepower. Script will assume that one collector/size is equal to this amount of scout/size. If you feel that script is too reluctant to scrap old collectors - you can decrease this value. Or increase, to make them more persistant. 1 value - 50% collector equial to 50% scout, 0.5 value - 50% collector equial to 25% scout, 2 value - 50% collector equial to 100% scout, etc.");
+        let scrapOptions = [{val: "none", label: "无", hint: "不自动解体机甲"},
+                            {val: "single", label: "机甲满舱", hint: "只在机甲舱满且需要更多机舱空间的时候解体机甲"},
+                            {val: "all", label: "所有低效", hint: "解体所有效率低的机甲，并更换为更好的机甲。"},
+                            {val: "mixed", label: "超过低效", hint: "在保留差不多刚好能够到达下一层的机甲前提下，尽可能解体所有低效的机甲"}];
+        addSettingsSelect(currentNode, "mechScrap", "解体机甲", "设置解体机甲的情况。不会解体地狱化的机甲。", scrapOptions);
+        addSettingsNumber(currentNode, "mechScrapEfficiency", "解体效率", "只在(旧机甲返还资源/新机甲资源花费)/(旧机甲攻击力/新机甲攻击力)超过相应数字时解体机甲。&#xA;转换的机甲具有相同的尺寸（1/3返还）。在这种情况下，1效率，脚本允许报废的机甲数低于33.3%。1.5效率-低于22.2%，2效率-低于16.6%，0.5效率-低于66.6%，0效率-低于100%，等等。&#xA;效率低于'1'不推荐，除非废品设置为'Full bay'，因为这是一个断点，退还的资源可以立即补偿损失的伤害，从而获得最佳伤害增长率。&#xA;高于'1'的效率是有用的，可以为更绝望的时候节省资源，或补偿低灵魂宝石收入。");
+        addSettingsNumber(currentNode, "mechCollectorValue", "搜集机甲价值", "搜集机甲没有战斗力，所以无法直接与其他机甲进行比较。脚本将以设定的比例来衡量搜集机甲的价值。如果您觉得脚本不太愿意解体旧的搜集机甲，您可以降低此数值，反之也可以提高此数值。设为1的情况下视为与侦察机甲等同战斗力，设为0.5则视为一半，设为2则视为两倍，以此类推。");
 
-        let buildOptions = [{val: "none", label: "None", hint: "Nothing will be build automatically"},
-                            {val: "random", label: "Random good", hint: "Build random mech with size chosen below, and best possible efficiency"},
-                            {val: "user", label: "Current design", hint: "Build whatever currently set in Mech Lab"}];
-        addSettingsSelect(currentNode, "mechBuild", "Build mechs", "Configures what will be build. Infernal mechs won't ever be build.", buildOptions);
+        let buildOptions = [{val: "none", label: "无", hint: "不自动制造机甲"},
+                            {val: "random", label: "最佳设计", hint: "制造大小为下方选择的，效率最高的机甲"},
+                            {val: "user", label: "当前设计", hint: "按照机甲实验室当前的设计来制造机甲"}];
+        addSettingsSelect(currentNode, "mechBuild", "制造机甲", "设置制造机甲的情况。不会制造地狱化的机甲。", buildOptions);
 
         // TODO: Make auto truly auto - some way to pick best "per x", depends on current bottleneck
-        let sizeOptions = [{val: "auto", label: "Damage Per Size", hint: "Select affordable mech with most damage per size on current floor"},
-                           {val: "gems", label: "Damage Per Gems", hint: "Select affordable mech with most damage per gems on current floor"},
-                           {val: "supply", label: "Damage Per Supply", hint: "Select affordable mech with most damage per supply on current floor"},
+        let sizeOptions = [{val: "auto", label: "每空间战斗力", hint: "根据当前层的每空间战斗力，尽可能选择最佳的机甲"},
+                           {val: "gems", label: "每宝石战斗力", hint: "根据当前层的每宝石战斗力，尽可能选择最佳的机甲"},
+                           {val: "supply", label: "每补给战斗力", hint: "根据当前层的每补给战斗力，尽可能选择最佳的机甲"},
                             ...MechManager.Size.map(id => ({val: id, label: game.loc(`portal_mech_size_${id}`), hint: game.loc(`portal_mech_size_${id}_desc`)}))];
-        addSettingsSelect(currentNode, "mechSize", "Preferred mech size", "Size of random mechs", sizeOptions);
-        addSettingsSelect(currentNode, "mechSizeGravity", "Gravity mech size", "Override preferred size with this on floors with high gravity", sizeOptions);
+        addSettingsSelect(currentNode, "mechSize", "偏好的机甲尺寸", "最佳设计的机甲尺寸", sizeOptions);
+        addSettingsSelect(currentNode, "mechSizeGravity", "重力环境下的机甲尺寸", "重力环境下自动制造的机甲尺寸", sizeOptions);
 
-        let specialOptions = [{val: "always", label: "Always", hint: "Add special equipment to all mechs"},
-                              {val: "prefered", label: "Preferred", hint: "Add special equipment when it doesn't reduce efficiency for current floor"},
-                              {val: "random", label: "Random", hint: "Special equipment will have same chance to be added as all others"},
-                              {val: "never", label: "Never", hint: "Never add special equipment"}];
-        addSettingsSelect(currentNode, "mechSpecial", "Special mechs", "Configures special equip", specialOptions);
-        addSettingsNumber(currentNode, "mechWaygatePotential", "Maximum mech potential for Waygate", "Fight Demon Lord only when current mech team potential below given amount. Full bay of best mechs will have `1` potential. Damage against Demon Lord does not affected by floor modifiers, all mechs always does 100% damage to him. Thus it's most time-efficient to fight him at times when mechs can't make good progress against regular monsters, and waiting for rebuilding. Auto Power needs to be on for this to work.");
-        addSettingsNumber(currentNode, "mechMinSupply", "Minimum supply income", "Build collectors if current supply income below given number");
-        addSettingsNumber(currentNode, "mechMaxCollectors", "Maximum collectors ratio", "Limiter for above option, maximum space used by collectors. 0.5 means up to 50% of total bay capacity will be dedicated to collectors, and such.");
-        addSettingsNumber(currentNode, "mechSaveSupplyRatio", "Save up supplies for next floor", "Ratio of supplies to save up for next floor. Script will stop spending supplies on new mechs when it estimates that by the time when floor will be cleared you'll be under this supply ratio. That allows build bunch of new mechs suited for next enemy right after entering new floor. With 1 value script will try to start new floors with full supplies, 0.5 - with half, 0 - any, effectively disabling this option, etc.");
-        addSettingsNumber(currentNode, "mechScouts", "Minimum scouts ratio", "Scouts compensate terrain penalty of suboptimal mechs. Build them up to this ratio.");
-        addSettingsToggle(currentNode, "mechInfernalCollector", "Build infernal collectors", "Infernal collectors have incresed supply cost, and payback time, but becomes more profitable after ~30 minutes of uptime.");
-        addSettingsToggle(currentNode, "mechScoutsRebuild", "Rebuild scouts", "Scouts provides full bonus to other mechs even being infficient, this option prevent rebuilding them saving resources.");
-        addSettingsToggle(currentNode, "mechFillBay", "Build smaller mechs when preferred not available", "Build smaller mechs when preferred size can't be used due to low remaining bay space, or supplies cap");
-        addSettingsToggle(currentNode, "buildingMechsFirst", "Build spire buildings only with full bay", "Fill mech bays up to current limit before spending resources on additional spire buildings");
-        addSettingsToggle(currentNode, "mechBaysFirst", "Scrap mechs only after building maximum bays", "Scrap old mechs only when no new bays and purifiers can be builded");
+        let specialOptions = [{val: "always", label: "常时", hint: "所有机甲都使用特殊装备"},
+                              {val: "prefered", label: "偏好", hint: "当特殊装备不降低当前层效率时使用特殊装备"},
+                              {val: "random", label: "随机", hint: "所有特殊装备都可能使用"},
+                              {val: "never", label: "永不", hint: "永不使用特殊装备"}];
+        addSettingsSelect(currentNode, "mechSpecial", "特殊装备", "设置特殊装备", specialOptions);
+        addSettingsNumber(currentNode, "mechWaygatePotential", "进入地狱之门的机甲潜力阈值", "只在机甲潜力低于相应数值时与恶魔领主进行战斗。机甲舱充满最好设计的机甲时潜力为1。恶魔领主的强度不受楼层和武器装备影响，所以在普通敌人需要时间太久时转为攻击恶魔领主会更有效率。需要开启自动供能此项才能生效。");
+        addSettingsNumber(currentNode, "mechMinSupply", "最低补给收入", "如果当前补给收入低于相应数字，则开始建造搜集机甲");
+        addSettingsNumber(currentNode, "mechMaxCollectors", "搜集机甲最高比例", "限制上方选项的搜集机甲数量。设为0.5则将使用一半的机舱空间建造搜集机甲，以此类推");
+        addSettingsNumber(currentNode, "mechSaveSupplyRatio", "为下一层提前积攒补给的比例", "为下一层保留的补给比例。脚本将估计您在这一层剩余的时间，如果通过这一层时补给会低于这个比例，则将开始保留补给。这样您就可以在进入新一层时立刻建造最佳的机甲了。设为1则将以满补给进入下一层，设为0.5则将以一半补给进入下一层，设为0则将无视此项，以此类推。");
+        addSettingsNumber(currentNode, "mechScouts", "侦察机甲最低比例", "侦察机甲可以抵消楼层生态对机甲的惩罚。以此比例建造它们。");
+        addSettingsToggle(currentNode, "mechInfernalCollector", "是否建造地狱化搜集机甲", "地狱化搜集机甲需要花费更多补给，但收益也更高，如果建造完以后可以持续30分钟左右运行，则净收益将超过普通搜集机甲。");
+        addSettingsToggle(currentNode, "mechScoutsRebuild", "是否重新建造侦察机甲", "侦察机甲即使在效率下降时，对其他机甲的加成也不会受到影响，此项可以阻止脚本重新建造侦察机甲，以节省资源。");
+        addSettingsToggle(currentNode, "mechFillBay", "当无法再建造偏好机甲时建造尺寸更小的机甲", "当机舱空间不足或补给上限不足，无法制造偏好尺寸的机甲时，制造尺寸更小的机甲");
+        addSettingsToggle(currentNode, "buildingMechsFirst", "是否在建造尖塔建筑之前先填满剩余的机舱空间", "在花费资源建造尖塔建筑之前，先建造机甲填满剩余的机舱空间");
+        addSettingsToggle(currentNode, "mechBaysFirst", "是否在解体机甲之前先最大化建造机甲舱", "只在无法建造机甲舱和空气净化器时解体机甲");
 
-        addStandardHeading(currentNode, "Mech Stats");
+        addStandardHeading(currentNode, "机甲属性计算");
         let statsControls = $(`<div style="margin-top: 5px; display: inline-flex;"></div>`);
         Object.entries({Compact: true, Efficient: true, Special: true, Gravity: false}).forEach(([option, value]) => {
             statsControls.append(`
-              <label class="switch" title="This switch have no ingame effect, and used to configure calculator below">
+              <label class="switch" title="用于下方计算">
                 <input id="script_mechStats${option}" type="checkbox"${value ? " checked" : ""}>
-                <span class="check"></span><span style="margin-left: 10px;">${option}</span>
+                <span class="check"></span><span style="margin-left: 10px;">${{Compact: "小型化", Efficient: "补给中", Special: "特殊", Gravity: "重力"}[option]}</span>
               </label>`);
         });
         statsControls.append(`
-          <label class="switch" title="This input have no ingame effect, and used to configure calculator below">
+          <label class="switch" title="用于下方计算">
             <input id="script_mechStatsScouts" class="input is-small" style="height: 25px; width: 50px" type="text" value="0">
-            <span style="margin-left: 10px;">Scouts</span>
+            <span style="margin-left: 10px;">侦察机甲</span>
           </label>`);
         statsControls.on('input', calculateMechStats);
         currentNode.append(statsControls);
@@ -13757,7 +13873,7 @@
         let largeFactor = efficient ? 1 : average(Object.values(MechManager.LargeChassisMod).reduce((list, mod) => list.concat(Object.values(mod)), []));
         let weaponFactor = efficient ? 1 : average(Object.values(poly.monsters).reduce((list, mod) => list.concat(Object.values(mod.weapon)), []));
 
-        let rows = [[""], ["Damage Per Size"], ["Damage Per Supply (New)"], ["Damage Per Gems (New)"], ["Damage Per Supply (Rebuild)"], ["Damage Per Gems (Rebuild)"]];
+        let rows = [[""], ["每空间战斗力"], ["每补给战斗力(新)"], ["每宝石战斗力(新)"], ["每补给战斗力(重新制造)"], ["每宝石战斗力(重新制造)"]];
         for (let i = 0; i < MechManager.Size.length - 1; i++) { // Exclude collectors
             let mech = {size: MechManager.Size[i], equip: special ? ['special'] : []};
 
@@ -13783,7 +13899,7 @@
 
     function buildEjectorSettings() {
         let sectionId = "ejector";
-        let sectionName = "Ejector, Supply & Nanite";
+        let sectionName = "质量喷射、补给及纳米体";
 
         let resetFunction = function() {
             resetEjectorSettings(true);
@@ -13804,26 +13920,26 @@
         let currentNode = $('#script_ejectorContent');
         currentNode.empty().off("*");
 
-        let spendOptions = [{val: "cap", label: "Capped", hint: "Use capped resources"},
-                            {val: "excess", label: "Excess", hint: "Use excess resources"},
-                            {val: "all", label: "All", hint: "Use all resources. This option can prevent script from progressing, and intended to use with additional conditions."},
-                            {val: "mixed", label: "Capped > Excess", hint: "Use capped resources first, switching to excess resources when capped alone is not enough."},
-                            {val: "full", label: "Capped > Excess > All", hint: "Use capped first, then excess, then everything else. Same as 'All' option can be potentialy dungerous."}];
-        let spendDesc = "Configures threshold when script will be allowed to use resources. With any option script will try to use most expensive of allowed resources within selected group. Craftables, when enabled, always use excess amount as threshold, having no cap.";
-        addSettingsSelect(currentNode, "ejectMode", "Eject mode", spendDesc, spendOptions);
-        addSettingsSelect(currentNode, "supplyMode", "Supply mode", spendDesc, spendOptions);
-        addSettingsSelect(currentNode, "naniteMode", "Nanite mode", spendDesc, spendOptions);
-        addSettingsToggle(currentNode, "prestigeWhiteholeStabiliseMass", "Stabilize blackhole", "Stabilizes the blackhole with exotic materials, disabled on whitehole runs");
+        let spendOptions = [{val: "cap", label: "达到上限", hint: "使用达到上限的资源"},
+                            {val: "excess", label: "多余", hint: "使用多余的资源"},
+                            {val: "all", label: "所有", hint: "使用所有的资源。使用此项后可能会导致脚本进度卡顿，请谨慎使用。"},
+                            {val: "mixed", label: "上限 > 多余", hint: "首先使用达到上限的资源，如果资源不足，再使用多余的资源。"},
+                            {val: "full", label: "上限 > 多余 > 所有", hint: "首先使用达到上限的资源，然后使用多余的资源，最后再使用所有的资源。请注意使用此项带来的风险。"}];
+        let spendDesc = "设置脚本使用资源的阈值。无论使用什么选项，脚本都会优先考虑价值最高的资源。若选择的是锻造物，则阈值永远为多余模式，因为它们没有上限。";
+        addSettingsSelect(currentNode, "ejectMode", "质量喷射模式", spendDesc, spendOptions);
+        addSettingsSelect(currentNode, "supplyMode", "补给模式", spendDesc, spendOptions);
+        addSettingsSelect(currentNode, "naniteMode", "纳米体模式", spendDesc, spendOptions);
+        addSettingsToggle(currentNode, "prestigeWhiteholeStabiliseMass", "是否稳定黑洞", "一直选择稳定黑洞，进行黑洞重置时无效");
 
         currentNode.append(`
           <table style="width:100%">
             <tr>
-              <th class="has-text-warning" style="width:20%">Resource</th>
-              <th class="has-text-warning" style="width:20%">Atomic Mass</th>
-              <th class="has-text-warning" style="width:10%">Eject</th>
-              <th class="has-text-warning" style="width:10%">Nanite</th>
-              <th class="has-text-warning" style="width:30%">Supply Value</th>
-              <th class="has-text-warning" style="width:10%">Supply</th>
+              <th class="has-text-warning" style="width:20%">资源名称</th>
+              <th class="has-text-warning" style="width:20%">原子质量</th>
+              <th class="has-text-warning" style="width:10%">允许喷射</th>
+              <th class="has-text-warning" style="width:10%">纳米体用</th>
+              <th class="has-text-warning" style="width:30%">补给价值</th>
+              <th class="has-text-warning" style="width:10%">允许补给</th>
             </tr>
             <tbody id="script_ejectorTableBody"></tbody>
           </table>`);
@@ -13870,7 +13986,7 @@
 
             if (SupplyManager.isConsumable(resource)) {
                 ejectElement = ejectElement.next();
-                ejectElement.append(`<span class="mass">Export <span class="has-text-caution">${SupplyManager.supplyOut(resource.id)}</span>, Gain <span class="has-text-success">${SupplyManager.supplyIn(resource.id)}</span></span>`);
+                ejectElement.append(`<span class="mass">使用<span class="has-text-caution">${SupplyManager.supplyOut(resource.id)}</span>，获得<span class="has-text-success">${SupplyManager.supplyIn(resource.id)}</span></span>`);
 
                 ejectElement = ejectElement.next();
                 addTableToggle(ejectElement, "res_supply" + resource.id);
@@ -13882,7 +13998,7 @@
 
     function buildMarketSettings() {
         let sectionId = "market";
-        let sectionName = "Market";
+        let sectionName = "市场";
 
         let resetFunction = function() {
             resetMarketSettings(true);
@@ -13902,30 +14018,30 @@
         let currentNode = $('#script_marketContent');
         currentNode.empty().off("*");
 
-        addSettingsNumber(currentNode, "minimumMoney", "Manual trade minimum money", "Minimum money to keep after bulk buying");
-        addSettingsNumber(currentNode, "minimumMoneyPercentage", "Manual trade minimum money percentage", "Minimum percentage of money to keep after bulk buying");
-        addSettingsNumber(currentNode, "tradeRouteMinimumMoneyPerSecond", "Trade minimum money /s", "Uses the highest per second amount of these two values. Will trade for resources until this minimum money per second amount is hit");
-        addSettingsNumber(currentNode, "tradeRouteMinimumMoneyPercentage", "Trade minimum money percentage /s", "Uses the highest per second amount of these two values. Will trade for resources until this percentage of your money per second amount is hit");
-        addSettingsToggle(currentNode, "tradeRouteSellExcess", "Sell excess resources", "With this option enabled script will be allowed to sell resources above amounts needed for constructions or researches, without it script sell only capped resources. As side effect boughts will also be limited to that amounts, to avoid 'buy up to cap -> sell excess' loops.");
+        addSettingsNumber(currentNode, "minimumMoney", "手动贸易保留的资金数量", "批量购买后至少保留相应的资金数量");
+        addSettingsNumber(currentNode, "minimumMoneyPercentage", "手动贸易保留的资金比例", "批量购买后至少保留相应的资金比例");
+        addSettingsNumber(currentNode, "tradeRouteMinimumMoneyPerSecond", "贸易允许的每秒资金收入最低值", "两项中较高的数值生效。达到每秒资金收入最低值后，才会购买资源");
+        addSettingsNumber(currentNode, "tradeRouteMinimumMoneyPercentage", "贸易允许的每秒资金收入最低比例", "两项中较高的数值生效。达到每秒资金收入最低比例后，才会购买资源");
+        addSettingsToggle(currentNode, "tradeRouteSellExcess", "是否出售多余的资源", "开启后将在建造或研究不需要的时候出售相应的资源，否则只会在接近上限时出售。同时，购买相应资源时也有会类似限制，以避免进入购买-出售的死循环。");
 
         currentNode.append(`
           <table style="width:100%">
             <tr>
               <th class="has-text-warning" colspan="1"></th>
-              <th class="has-text-warning" colspan="4">Manual Trades</th>
-              <th class="has-text-warning" colspan="4">Trade Routes</th>
+              <th class="has-text-warning" colspan="4">手动贸易</th>
+              <th class="has-text-warning" colspan="4">贸易路线</th>
               <th class="has-text-warning" colspan="1"></th>
             </tr>
             <tr>
-              <th class="has-text-warning" style="width:15%">Resource</th>
-              <th class="has-text-warning" style="width:10%">Buy</th>
-              <th class="has-text-warning" style="width:10%">Ratio</th>
-              <th class="has-text-warning" style="width:10%">Sell</th>
-              <th class="has-text-warning" style="width:10%">Ratio</th>
-              <th class="has-text-warning" style="width:10%">In</th>
-              <th class="has-text-warning" style="width:10%">Away</th>
-              <th class="has-text-warning" style="width:10%">Weighting</th>
-              <th class="has-text-warning" style="width:10%">Priority</th>
+              <th class="has-text-warning" style="width:15%">资源名称</th>
+              <th class="has-text-warning" style="width:10%">购买</th>
+              <th class="has-text-warning" style="width:10%">比例</th>
+              <th class="has-text-warning" style="width:10%">出售</th>
+              <th class="has-text-warning" style="width:10%">比例</th>
+              <th class="has-text-warning" style="width:10%">购买用路线数</th>
+              <th class="has-text-warning" style="width:10%">出售用路线数</th>
+              <th class="has-text-warning" style="width:10%">权重</th>
+              <th class="has-text-warning" style="width:10%">优先级</th>
               <th style="width:5%"></th>
             </tr>
             <tbody id="script_marketTableBody"></tbody>
@@ -13986,16 +14102,16 @@
             },
         });
 
-        addStandardHeading(currentNode, "Galaxy Trades");
-        addSettingsNumber(currentNode, "marketMinIngredients", "Minimum materials to preserve", "Galaxy Market will buy resources only when all selling materials above given ratio");
+        addStandardHeading(currentNode, "星际贸易");
+        addSettingsNumber(currentNode, "marketMinIngredients", "原料保底储量", "星际贸易只在所有出售的材料都高于保底储量时购买相应资源");
 
         currentNode.append(`
           <table style="width:100%">
             <tr>
-              <th class="has-text-warning" style="width:30%">Buy</th>
-              <th class="has-text-warning" style="width:30%">Sell</th>
-              <th class="has-text-warning" style="width:20%">Weighting</th>
-              <th class="has-text-warning" style="width:20%">Priority</th>
+              <th class="has-text-warning" style="width:30%">购买</th>
+              <th class="has-text-warning" style="width:30%">出售</th>
+              <th class="has-text-warning" style="width:20%">权重</th>
+              <th class="has-text-warning" style="width:20%">优先级</th>
             </tr>
             <tbody id="script_marketGalaxyTableBody"></tbody>
           </table>`);
@@ -14032,7 +14148,7 @@
 
     function buildStorageSettings() {
         let sectionId = "storage";
-        let sectionName = "Storage";
+        let sectionName = "存储";
 
         let resetFunction = function() {
             resetStorageSettings(true);
@@ -14052,19 +14168,19 @@
         let currentNode = $('#script_storageContent');
         currentNode.empty().off("*");
 
-        addSettingsToggle(currentNode, "storageLimitPreMad", "Limit Pre-MAD Storage", "Saves resources and shortens run time by limiting storage pre-MAD");
-        addSettingsToggle(currentNode, "storageSafeReassign", "Reassign only empty storages", "Wait until storage is empty before reassigning containers to another resource, to prevent overflowing and wasting resources");
-        addSettingsToggle(currentNode, "storageAssignExtra", "Assign buffer storage", "Assigns 3% extra strorage above required amounts, ensuring that required quantity will be actually reached, even if other part of script trying to sell\\eject\\switch production, etc. When manual trades enabled applies additional adjust derieved from selling threshold.");
-        addSettingsToggle(currentNode, "storagePrioritizedOnly", "Assign per buildings", "Assign storage based on individual costs of each enabled buildings, instead of going for maximums. Allows to prioritize storages for queue and trigger, and skip assigning for unaffordable expensive buildings. Experimental feature.");
+        addSettingsToggle(currentNode, "storageLimitPreMad", "限制核爆重置之前阶段的存储", "限制核爆重置之前阶段的存储来节省资源和相应时间");
+        addSettingsToggle(currentNode, "storageSafeReassign", "只在板条箱或集装箱有空余时进行重新分配", "直到相应的板条箱或集装箱未装有相应资源时才考虑将它重新分配给其他资源，以防止资源溢出浪费");
+        addSettingsToggle(currentNode, "storageAssignExtra", "是否分配缓冲用的存储", "以超过需要数值的3%进行分配，以保证能达到所需要的数值，以避免脚本其他功能的干扰。");
+        addSettingsToggle(currentNode, "storagePrioritizedOnly", "根据每种建筑分配存储", "根据启用的建筑每一个的花费来分配存储，而不是考虑总量来分配。可以优先对触发器或队列等所需要的资源分配存储，并可以跳过超过储量上限的建筑。实验性的功能。");
 
         currentNode.append(`
           <table style="width:100%">
             <tr>
-              <th class="has-text-warning" style="width:35%">Resource</th>
-              <th class="has-text-warning" style="width:15%">Enabled</th>
-              <th class="has-text-warning" style="width:15%">Store Overflow</th>
-              <th class="has-text-warning" style="width:15%">Max Crates</th>
-              <th class="has-text-warning" style="width:15%">Max Containers</th>
+              <th class="has-text-warning" style="width:35%">资源名称</th>
+              <th class="has-text-warning" style="width:15%">是否启用</th>
+              <th class="has-text-warning" style="width:15%">是否对溢出部分分配存储</th>
+              <th class="has-text-warning" style="width:15%">最大板条箱</th>
+              <th class="has-text-warning" style="width:15%">最大集装箱</th>
               <th style="width:5%"></th>
             </tr>
             <tbody id="script_storageTableBody"></tbody>
@@ -14118,7 +14234,7 @@
 
     function buildMinorTraitSettings() {
         let sectionId = "minorTrait";
-        let sectionName = "Traits";
+        let sectionName = "次要特质";
 
         let resetFunction = function() {
             resetMinorTraitSettings(true);
@@ -14137,27 +14253,27 @@
         let currentNode = $('#script_minorTraitContent');
         currentNode.empty().off("*");
 
-        let genusOptions = [{val: "ignore", label: "Ignore", hint: "Do not shift genus"},
+        let genusOptions = [{val: "ignore", label: "忽略", hint: "不变换种群"},
                             {val: "none", label: game.loc(`genelab_genus_none`)},
                             ...Object.values(game.races).map(r => r.type).filter((g, i, a) => g && g !== "organism" && g !== "synthetic" && a.indexOf(g) === i).map(g => (
                             {val: g, label: game.loc(`genelab_genus_${g}`)}))];
-        addSettingsSelect(currentNode, "shifterGenus", "Mimic genus", "Mimic selected genus, if avaialble. If you want to add some conditional overrides to this setting, keep in mind changing genus redraws game page, frequent changes can drastically harm game performance.", genusOptions);
+        addSettingsSelect(currentNode, "shifterGenus", "拟态种群", "拟态特质选择相应种群。如果您想要对此项进行进阶设置，请注意切换拟态特质将刷新游戏页面，切换过于频繁将影响游戏运行。", genusOptions);
 
-        let shrineOptions = [{val: "any", label: "Any", hint: "Build any Shrines, whenever have resources for it"},
-                             {val: "equally", label: "Equally", hint: "Build all Shrines equally"},
-                             {val: "morale", label: "Morale", hint: "Build only Morale Shrines"},
-                             {val: "metal", label: "Metal", hint: "Build only Metal Shrines"},
-                             {val: "know", label: "Knowledge", hint: "Build only Knowledge Shrines"},
-                             {val: "tax", label: "Tax", hint: "Build only Tax Shrines"}];
-        addSettingsSelect(currentNode, "buildingShrineType", "Magnificent shrine", "Auto Build shrines only at moons of chosen shrine", shrineOptions);
-        addSettingsToggle(currentNode, "jobScalePop", "High Pop job scale", "Auto Job will automatically scaly breakpoints to match population increase");
+        let shrineOptions = [{val: "any", label: "任意类型", hint: "只要资源足够就建造圣地"},
+                             {val: "equally", label: "平均分配", hint: "平均建造所有类型的圣地"},
+                             {val: "morale", label: "士气", hint: "只建造提升士气的圣地"},
+                             {val: "metal", label: "金属", hint: "只建造提升金属产量的圣地"},
+                             {val: "know", label: "知识", hint: "只建造提升知识的圣地"},
+                             {val: "tax", label: "税收", hint: "只建造提升税收的圣地"}];
+        addSettingsSelect(currentNode, "buildingShrineType", "圣地种类偏好", "只在对应月相时建造相应的圣地", shrineOptions);
+        addSettingsToggle(currentNode, "jobScalePop", "拥有人口众多特质时自动工作倍率提升", "自动工作将自动将相应阈值乘以该倍率，以匹配人口数量");
 
         currentNode.append(`
           <table style="width:100%">
             <tr>
-              <th class="has-text-warning" style="width:20%">Minor Trait</th>
-              <th class="has-text-warning" style="width:20%">Enabled</th>
-              <th class="has-text-warning" style="width:20%">Weighting</th>
+              <th class="has-text-warning" style="width:20%">次要特质</th>
+              <th class="has-text-warning" style="width:20%">是否启用</th>
+              <th class="has-text-warning" style="width:20%">权重</th>
               <th class="has-text-warning" style="width:40%"></th>
             </tr>
             <tbody id="script_minorTraitTableBody"></tbody>
@@ -14205,7 +14321,7 @@
 
     function buildMagicSettings() {
         let sectionId = "magic";
-        let sectionName = "Magic";
+        let sectionName = "魔法";
 
         let resetFunction = function() {
             resetMagicSettings(true);
@@ -14231,15 +14347,15 @@
     }
 
     function updateMagicAlchemy(currentNode) {
-        addStandardHeading(currentNode, "Alchemy");
-        addSettingsNumber(currentNode, "magicAlchemyManaUse", "Mana income used", "Income portion to use on alchemy. Setting to 1 is not recommended, leftover mana will be used for rituals.");
+        addStandardHeading(currentNode, "炼金术");
+        addSettingsNumber(currentNode, "magicAlchemyManaUse", "法力产量使用的比例", "炼金术使用的法力产量比例。不建议设为1。剩余的法力将用于仪式。");
 
         currentNode.append(`
           <table style="width:100%">
             <tr>
-              <th class="has-text-warning" style="width:20%">Resource</th>
-              <th class="has-text-warning" style="width:20%">Enabled</th>
-              <th class="has-text-warning" style="width:20%">Weighting</th>
+              <th class="has-text-warning" style="width:20%">资源名称</th>
+              <th class="has-text-warning" style="width:20%">是否启用</th>
+              <th class="has-text-warning" style="width:20%">权重</th>
               <th class="has-text-warning" style="width:40%"></th>
             </tr>
             <tbody id="script_alchemyTableBody"></tbody>
@@ -14269,7 +14385,7 @@
 
     function buildProductionSettings() {
         let sectionId = "production";
-        let sectionName = "Production";
+        let sectionName = "生产";
 
         let resetFunction = function() {
             resetProductionSettings(true);
@@ -14289,7 +14405,7 @@
         let currentNode = $('#script_productionContent');
         currentNode.empty().off("*");
 
-        addSettingsNumber(currentNode, "productionChrysotileWeight", "Chrysotile weighting", "Chrysotile weighting for autoQuarry, applies after adjusting to difference between current amounts of Stone and Chrysotile");
+        addSettingsNumber(currentNode, "productionChrysotileWeight", "温石棉权重", "自动温石棉控制使用的权重，根据当前的石头和温石棉差值来应用权重");
         updateProductionTableSmelter(currentNode);
         updateProductionTableFoundry(currentNode);
         updateProductionTableFactory(currentNode);
@@ -14299,19 +14415,19 @@
     }
 
     function updateProductionTableSmelter(currentNode) {
-        addStandardHeading(currentNode, "Smelter");
+        addStandardHeading(currentNode, "冶炼厂");
 
-        let smelterOptions = [{val: "iron", label: "Prioritize Iron", hint: "Produce only Iron, untill storage capped, and switch to Steel after that"},
-                              {val: "steel", label: "Prioritize Steel", hint: "Produce as much Steel as possible, untill storage capped, and switch to Iron after that"},
-                              {val: "storage", label: "Up to full storages", hint: "Produce both Iron and Steel at ratio which will fill both storages at same time for both"},
-                              {val: "required", label: "Up to required amounts", hint: "Produce both Iron and Steel at ratio which will produce maximum amount of resources required for buildings at same time for both"}];
-        addSettingsSelect(currentNode, "productionSmelting", "Smelters production", "Distribution of smelters between iron and steel", smelterOptions);
-        addSettingsNumber(currentNode, "productionSmeltingIridium", "Iridium ratio", "Share of smelters dedicated to Iridium");
+        let smelterOptions = [{val: "iron", label: "优先熔炼铁", hint: "只冶炼铁，直到铁达到存储上限，再切换为冶炼钢"},
+                              {val: "steel", label: "优先熔炼钢", hint: "只冶炼钢，直到钢达到存储上限，再切换为冶炼铁"},
+                              {val: "storage", label: "直到达到上限", hint: "以一定的比例同时冶炼铁和钢，保证它们同时达到存储上限"},
+                              {val: "required", label: "直到达到需求数量", hint: "以一定的比例同时冶炼铁和钢，保证它们同时达到建筑的需求"}];
+        addSettingsSelect(currentNode, "productionSmelting", "冶炼厂生产", "冶炼厂冶炼铁和钢的方式", smelterOptions);
+        addSettingsNumber(currentNode, "productionSmeltingIridium", "铱冶炼比例", "用于冶炼铱的比例");
 
         currentNode.append(`
           <table style="width:100%">
             <tr>
-              <th class="has-text-warning" style="width:95%">Fuel</th>
+              <th class="has-text-warning" style="width:95%">燃料使用顺序</th>
               <th style="width:5%"></th>
             </tr>
             <tbody id="script_productionTableBodySmelter"></tbody>
@@ -14333,7 +14449,7 @@
             let fuel = smelterFuels[i];
             let productionElement = $('#script_smelter_' + fuel.id);
 
-            productionElement.append(buildTableLabel(fuel.id));
+            productionElement.append(buildTableLabel({"Oil":"石油","Coal":"煤","Wood":"木材","Star":"星辰","Inferno":"地狱燃料"}[fuel.id]));
         }
 
         tableBodyNode.sortable({
@@ -14351,16 +14467,16 @@
     }
 
     function updateProductionTableFactory(currentNode) {
-        addStandardHeading(currentNode, "Factory");
-        addSettingsNumber(currentNode, "productionFactoryMinIngredients", "Minimum materials to preserve", "Factory will craft resources only when all required materials above given ratio");
+        addStandardHeading(currentNode, "工厂");
+        addSettingsNumber(currentNode, "productionFactoryMinIngredients", "原料保底储量", "工厂只在所有需要的材料都高于保底储量时制造相应产品");
 
         currentNode.append(`
           <table style="width:100%">
             <tr>
-              <th class="has-text-warning" style="width:35%">Resource</th>
-              <th class="has-text-warning" style="width:20%">Enabled</th>
-              <th class="has-text-warning" style="width:20%">Weighting</th>
-              <th class="has-text-warning" style="width:20%">Priority</th>
+              <th class="has-text-warning" style="width:35%">资源名称</th>
+              <th class="has-text-warning" style="width:20%">是否启用</th>
+              <th class="has-text-warning" style="width:20%">权重</th>
+              <th class="has-text-warning" style="width:20%">优先级</th>
               <th style="width:5%"></th>
             </tr>
             <tbody id="script_productionTableBodyFactory"></tbody>
@@ -14396,19 +14512,19 @@
     }
 
     function updateProductionTableFoundry(currentNode) {
-        addStandardHeading(currentNode, "Foundry");
-        let weightingOptions = [{val: "none", label: "None", hint: "Use configured weightings with no additional adjustments, craftables with x2 weighting will be crafted two times more intense than with x1, etc."},
-                                {val: "demanded", label: "Prioritize demanded", hint: "Ignore craftables once stored amount surpass cost of most expensive building, until all missing resources will be crafted. After that works as with 'none' adjustments."},
-                                {val: "buildings", label: "Buildings weightings", hint: "Uses weightings of buildings which are waiting for craftables, as multipliers to craftables weighting. This option requires autoBuild."}];
-        addSettingsSelect(currentNode, "productionFoundryWeighting", "Weightings adjustments", "Configures how exactly craftables will be weighted against each other", weightingOptions);
+        addStandardHeading(currentNode, "铸造厂");
+        let weightingOptions = [{val: "none", label: "None", hint: "按照正常的权重制造。2倍权重的锻造物将比1倍权重的锻造物多制造1倍，以此类推。"},
+                                {val: "demanded", label: "优先制造需要的", hint: "当锻造物储量超过花费最高的建筑时忽略相应锻造物，直到所有锻造物都超过了相应数值。之后与上方“无”选项效果相同。"},
+                                {val: "buildings", label: "按建筑权重", hint: "使用需要锻造物建筑的权重，计入锻造物的权重。需要开启自动建筑此项才能生效。"}];
+        addSettingsSelect(currentNode, "productionFoundryWeighting", "锻造物权重", "控制锻造物与其他资源相比的权重", weightingOptions);
 
         currentNode.append(`
           <table style="width:100%">
             <tr>
-              <th class="has-text-warning" style="width:35%">Resource</th>
-              <th class="has-text-warning" style="width:20%">Enabled</th>
-              <th class="has-text-warning" style="width:20%" title="Ratio between resources. Script assign craftsmans to resource with lowest 'amount / weighting'. Ignored by manual crafting.">Weighting</th>
-              <th class="has-text-warning" style="width:20%" title="Only craft resource when storage ratio of all required materials above given number. E.g. bricks with 0.1 min materials will be crafted only when cement storage at least 10% filled.">Min Materials</th>
+              <th class="has-text-warning" style="width:35%">资源名称</th>
+              <th class="has-text-warning" style="width:20%">是否启用</th>
+              <th class="has-text-warning" style="width:20%" title="资源的权重。脚本会优先将工匠分配给(资源数量除以权重)较低的锻造物。手动锻造时无效。">权重</th>
+              <th class="has-text-warning" style="width:20%" title="只在原材料大于相应比例时进行锻造。例如，将砌砖设为0.1，则只会在水泥数量超过库存上限10%的时候锻造砌砖。">锻造物原料保底产量</th>
               <th style="width:5%"></th>
             </tr>
             <tbody id="script_productionTableBodyFoundry"></tbody>
@@ -14436,7 +14552,7 @@
 
             productionElement = productionElement.next();
             if (resource === resources.Scarletite || resource === resources.Quantium) {
-                productionElement.append('<span>Managed</span>');
+                productionElement.append('<span>脚本自动管理</span>');
             } else {
                 addTableInput(productionElement, "foundry_w_" + resource.id);
             }
@@ -14447,15 +14563,15 @@
     }
 
     function updateProductionTableMiningDrone(currentNode) {
-        addStandardHeading(currentNode, "Mining Drone");
+        addStandardHeading(currentNode, "采矿机器人");
 
         currentNode.append(`
           <table style="width:100%">
             <tr>
-              <th class="has-text-warning" style="width:35%">Resource</th>
+              <th class="has-text-warning" style="width:35%">资源名称</th>
               <th class="has-text-warning" style="width:20%"></th>
-              <th class="has-text-warning" style="width:20%">Weighting</th>
-              <th class="has-text-warning" style="width:20%">Priority</th>
+              <th class="has-text-warning" style="width:20%">权重</th>
+              <th class="has-text-warning" style="width:20%">优先级</th>
               <th style="width:5%"></th>
             </tr>
             <tbody id="script_productionTableBodyMiningDrone"></tbody>
@@ -14488,14 +14604,14 @@
     }
 
     function updateMagicPylon(currentNode) {
-        addStandardHeading(currentNode, "Pylon");
-        addSettingsNumber(currentNode, "productionRitualManaUse", "Mana income used", "Income portion to use on rituals. Setting to 1 is not recommended, as it will halt mana regeneration. Applied only when mana not capped - with capped mana script will always use all income.");
+        addStandardHeading(currentNode, "水晶塔");
+        addSettingsNumber(currentNode, "productionRitualManaUse", "法力产量使用的比例", "仪式使用的法力产量比例。不建议设为1，这样会使法力产量为零。只在法力未达到上限时生效，达到上限后将使用所有法力产量。");
 
         currentNode.append(`
           <table style="width:100%">
             <tr>
-              <th class="has-text-warning" style="width:55%">Ritual</th>
-              <th class="has-text-warning" style="width:20%">Weighting</th>
+              <th class="has-text-warning" style="width:55%">仪式</th>
+              <th class="has-text-warning" style="width:20%">权重</th>
               <th style="width:25%"></th>
             </tr>
             <tbody id="script_magicTableBodyPylon"></tbody>
@@ -14526,7 +14642,7 @@
 
     function buildJobSettings() {
         let sectionId = "job";
-        let sectionName = "Job";
+        let sectionName = "工作";
 
         let resetFunction = function() {
             resetJobSettings(true);
@@ -14545,21 +14661,21 @@
         let currentNode = $('#script_jobContent');
         currentNode.empty().off("*");
 
-        addSettingsToggle(currentNode, "jobSetDefault", "Set default job", "Automatically sets the default job in order of Quarry Worker -> Lumberjack -> Crystal Miner -> Scavenger -> Hunter -> Farmer");
-        addSettingsNumber(currentNode, "jobLumberWeighting", "Final Lumberjack Weighting", "AFTER allocating breakpoints this weighting will be used to split lumberjacks, quarry workers, crystal miners and scavengers");
-        addSettingsNumber(currentNode, "jobQuarryWeighting", "Final Quarry Worker Weighting", "AFTER allocating breakpoints this weighting will be used to split lumberjacks, quarry workers, crystal miners and scavengers");
-        addSettingsNumber(currentNode, "jobCrystalWeighting", "Final Crystal Miner Weighting", "AFTER allocating breakpoints this weighting will be used to split lumberjacks, quarry workers, crystal miners and scavengers");
-        addSettingsNumber(currentNode, "jobScavengerWeighting", "Final Scavenger Weighting", "AFTER allocating breakpoints this weighting will be used to split lumberjacks, quarry workers, crystal miners and scavengers");
-        addSettingsToggle(currentNode, "jobDisableMiners", "Disable miners in Andromeda", "Disable Miners and Coal Miners after reaching Andromeda");
-        addSettingsToggle(currentNode, "jobDisableCraftsmans", "Craft manually when possible", "Disable foundry crafters when manual craft is allowed");
+        addSettingsToggle(currentNode, "jobSetDefault", "设置默认工作", "自动以石工->伐木工人->水晶矿工->拾荒者->猎人->农民的顺序设置默认工作");
+        addSettingsNumber(currentNode, "jobLumberWeighting", "最终伐木工人权重", "用于分配伐木工人，石工，水晶矿工和拾荒者的数量");
+        addSettingsNumber(currentNode, "jobQuarryWeighting", "最终石工权重", "用于分配伐木工人，石工，水晶矿工和拾荒者的数量");
+        addSettingsNumber(currentNode, "jobCrystalWeighting", "最终水晶矿工权重", "用于分配伐木工人，石工，水晶矿工和拾荒者的数量");
+        addSettingsNumber(currentNode, "jobScavengerWeighting", "最终拾荒者权重", "用于分配伐木工人，石工，水晶矿工和拾荒者的数量");
+        addSettingsToggle(currentNode, "jobDisableMiners", "到达仙女座星系以后禁用矿工", "到达仙女座星系以后禁用矿工和煤矿工人");
+        addSettingsToggle(currentNode, "jobDisableCraftsmans", "如果可以的话，手动进行锻造", "如果可以手动进行锻造，则禁用可手动锻造资源的所有工匠");
 
         currentNode.append(`
           <table style="width:100%">
             <tr>
-              <th class="has-text-warning" style="width:35%">Job</th>
-              <th class="has-text-warning" style="width:20%">1st Pass Max</th>
-              <th class="has-text-warning" style="width:20%">2nd Pass Max</th>
-              <th class="has-text-warning" style="width:20%">Final Max</th>
+              <th class="has-text-warning" style="width:35%">工作</th>
+              <th class="has-text-warning" style="width:20%">第一阈值</th>
+              <th class="has-text-warning" style="width:20%">第二阈值</th>
+              <th class="has-text-warning" style="width:20%">最终阈值</th>
               <th style="width:5%"></th>
             </tr>
             <tbody id="script_jobTableBody"></tbody>
@@ -14624,7 +14740,7 @@
 
     function buildJobSettingsInput(node, job, breakpoint) {
         if (job === jobs.Farmer || job === jobs.Hunter || job instanceof CraftingJob || (job !== jobs.Unemployed && breakpoint === 3 && job.isUnlimited())) {
-            node.append(`<span>Managed</span>`);
+            node.append(`<span>脚本自动管理</span>`);
         } else {
             addTableInput(node, `job_b${breakpoint}_${job._originalId}`);
         }
@@ -14632,7 +14748,7 @@
 
     function buildWeightingSettings() {
         let sectionId = "weighting";
-        let sectionName = "AutoBuild Weighting";
+        let sectionName = "自动建筑权重";
 
         let resetFunction = function() {
             resetWeightingSettings(true);
@@ -14649,40 +14765,40 @@
         let currentNode = $('#script_weightingContent');
         currentNode.empty().off("*");
 
-        addSettingsToggle(currentNode, "buildingBuildIfStorageFull", "Ignore weighting and build if any storage is full", "Ignore weighting and immediately construct building if it uses any capped resource, preventing wasting them by overflowing. Weight still need to be positive(above zero) for this to happen.");
+        addSettingsToggle(currentNode, "buildingBuildIfStorageFull", "如果任意相关资源存储已满，则忽略权重进行建造", "如果建筑所使用的任意一项资源超过上限，则忽略权重立刻进行建造，以避免浪费资源。权重仍然需要设为正数(大于0)后此项才能生效。");
 
         currentNode.append(`
           <table style="width:100%">
             <tr>
-              <th class="has-text-warning" style="width:30%">Target</th>
-              <th class="has-text-warning" style="width:60%">Condition</th>
-              <th class="has-text-warning" style="width:10%">Multiplier</th>
+              <th class="has-text-warning" style="width:30%">目标</th>
+              <th class="has-text-warning" style="width:60%">条件</th>
+              <th class="has-text-warning" style="width:10%">倍率</th>
             </tr>
             <tbody id="script_weightingTableBody"></tbody>
           </table>`);
 
         let tableBodyNode = $('#script_weightingTableBody');
 
-        addWeightingRule(tableBodyNode, "Any", "New building", "buildingWeightingNew");
-        addWeightingRule(tableBodyNode, "Powered building", "Low available energy", "buildingWeightingUnderpowered");
-        addWeightingRule(tableBodyNode, "Power plant", "Low available energy", "buildingWeightingNeedfulPowerPlant");
-        addWeightingRule(tableBodyNode, "Power plant", "Producing more energy than required", "buildingWeightingUselessPowerPlant");
-        addWeightingRule(tableBodyNode, "Knowledge storage", "Have unlocked unafforable researches", "buildingWeightingNeedfulKnowledge");
-        addWeightingRule(tableBodyNode, "Knowledge storage", "All unlocked researches already affordable", "buildingWeightingUselessKnowledge");
-        addWeightingRule(tableBodyNode, "Building with state (city)", "Some instances of this building are not working", "buildingWeightingNonOperatingCity");
-        addWeightingRule(tableBodyNode, "Building with state (space)", "Some instances of this building are not working", "buildingWeightingNonOperating");
-        addWeightingRule(tableBodyNode, "Building with consumption", "Missing consumables to operate", "buildingWeightingMissingSupply");
-        addWeightingRule(tableBodyNode, "Support consumer", "Missing support to operate", "buildingWeightingMissingSupport");
-        addWeightingRule(tableBodyNode, "Support provider", "Provided support not currently needed", "buildingWeightingUselessSupport");
-        addWeightingRule(tableBodyNode, "All fuel depots", "Missing Oil or Helium for techs and missions", "buildingWeightingMissingFuel");
-        addWeightingRule(tableBodyNode, "Not housing, barrack, oil derrick, or knowledge building", "MAD prestige enabled, and affordable", "buildingWeightingMADUseless");
-        addWeightingRule(tableBodyNode, "Mass Ejector", "Existed ejectors not fully utilized", "buildingWeightingUnusedEjectors");
-        addWeightingRule(tableBodyNode, "Freight Yard, Container Port, Munitions Depot", "Have unused crates or containers", "buildingWeightingCrateUseless");
-        addWeightingRule(tableBodyNode, "Horseshoes", "No more Horseshoes needed", "buildingWeightingHorseshoeUseless");
-        addWeightingRule(tableBodyNode, "Meditation Chamber", "No more Meditation Space needed", "buildingWeightingZenUseless");
-        addWeightingRule(tableBodyNode, "Gate Turret", "Gate demons fully supressed", "buildingWeightingGateTurret");
-        addWeightingRule(tableBodyNode, "Warehouses, Garage, Cargo Yard, Storehouse", "Need more storage", "buildingWeightingNeedStorage");
-        addWeightingRule(tableBodyNode, "Housing", "Less than 90% of houses are used", "buildingWeightingUselessHousing");
+        addWeightingRule(tableBodyNode, "任意类型", "新建筑", "buildingWeightingNew");
+        addWeightingRule(tableBodyNode, "用电建筑", "电力不足", "buildingWeightingUnderpowered");
+        addWeightingRule(tableBodyNode, "发电厂", "电力不足", "buildingWeightingNeedfulPowerPlant");
+        addWeightingRule(tableBodyNode, "发电厂", "电力过剩", "buildingWeightingUselessPowerPlant");
+        addWeightingRule(tableBodyNode, "知识上限建筑", "存在因知识上限不足而无法进行的研究", "buildingWeightingNeedfulKnowledge");
+        addWeightingRule(tableBodyNode, "知识上限建筑", "不存在因知识上限不足而无法进行的研究", "buildingWeightingUselessKnowledge");
+        addWeightingRule(tableBodyNode, "需要调整供能的建筑(地面)", "并非所有建筑都在正常供能", "buildingWeightingNonOperatingCity");
+        addWeightingRule(tableBodyNode, "需要调整供能的建筑(太空)", "并非所有建筑都在正常供能", "buildingWeightingNonOperating");
+        addWeightingRule(tableBodyNode, "供能物资不足的建筑", "缺少供能物资，无法正常运转", "buildingWeightingMissingSupply");
+        addWeightingRule(tableBodyNode, "需要花费支持的建筑", "缺少支持，无法正常运转", "buildingWeightingMissingSupport");
+        addWeightingRule(tableBodyNode, "提供支持的建筑", "提供的支持超过了目前的需求", "buildingWeightingUselessSupport");
+        addWeightingRule(tableBodyNode, "所有燃料存储", "进行研究或任务需要的石油或氦-3超过存储上限", "buildingWeightingMissingFuel");
+        addWeightingRule(tableBodyNode, "提升人口、士兵、石油或知识上限以外的建筑", "进行核爆重置，且已研究相互毁灭", "buildingWeightingMADUseless");
+        addWeightingRule(tableBodyNode, "质量喷射器", "存在未完全运作的质量喷射器", "buildingWeightingUnusedEjectors");
+        addWeightingRule(tableBodyNode, "货场、集装箱港口与弹药库", "有未使用的板条箱或集装箱", "buildingWeightingCrateUseless");
+        addWeightingRule(tableBodyNode, "马蹄铁", "暂时不需要马蹄铁", "buildingWeightingHorseshoeUseless");
+        addWeightingRule(tableBodyNode, "冥想室", "暂时不需要冥想室", "buildingWeightingZenUseless");
+        addWeightingRule(tableBodyNode, "远古之门炮塔", "远古之门的恶魔已经完全压制", "buildingWeightingGateTurret");
+        addWeightingRule(tableBodyNode, "仓库，格纳库，星际货仓，卫星仓库", "需要更多提供储量上限的建筑", "buildingWeightingNeedStorage");
+        addWeightingRule(tableBodyNode, "住房", "有市民居住的住房没有超过90%", "buildingWeightingUselessHousing");
 
         document.documentElement.scrollTop = document.body.scrollTop = currentScrollPosition;
     }
@@ -14700,7 +14816,7 @@
 
     function buildBuildingSettings() {
         let sectionId = "building";
-        let sectionName = "Building";
+        let sectionName = "建筑";
 
         let resetFunction = function() {
             resetBuildingSettings(true);
@@ -14720,19 +14836,19 @@
         let currentNode = $('#script_buildingContent');
         currentNode.empty().off("*");
 
-        addSettingsToggle(currentNode, "buildingsIgnoreZeroRate", "Do not wait for resources without income", "Weighting checks will ignore resources without positive income(craftables, inactive factory goods, etc), buildings with such resources will not delay other buildings.");
-        addSettingsToggle(currentNode, "buildingsLimitPowered", "Limit amount of powered buildings", "With this option enabled Max Build will prevent powering extra building. Can be useful to disable buildings with overrided settings.");
-        addSettingsNumber(currentNode, "buildingTowerSuppression", "Minimum suppression for Towers", "East Tower and West Tower won't be built until minimum suppression is reached");
+        addSettingsToggle(currentNode, "buildingsIgnoreZeroRate", "忽略无产量的资源", "权重将忽略无产量的资源(例如锻造物，未进行生产的产物等)，如果有相应的建筑物需要这些资源，则不会因此影响其他建筑的建造。");
+        addSettingsToggle(currentNode, "buildingsLimitPowered", "限制需要供能的建筑数量", "开启此项后，脚本只会对建造上限数量的建筑进行供能，超出部分不进行供能。可以用来限制以其他方式建造的建筑供能上限。");
+        addSettingsNumber(currentNode, "buildingTowerSuppression", "巨塔安全指数阈值", "达到相应安全指数以后，才会开始建造西侧巨塔和东侧巨塔");
 
         currentNode.append(`
-          <div><input id="script_buildingSearch" class="script-searchsettings" type="text" placeholder="Search for buildings..."></div>
+          <div><input id="script_buildingSearch" class="script-searchsettings" type="text" placeholder="搜索建筑……"></div>
           <table style="width:100%">
             <tr>
-              <th class="has-text-warning" style="width:35%">Building</th>
-              <th class="has-text-warning" style="width:15%" title="Enables auto building. Triggers ignores this option, allowing to build disabled things.">Auto Build</th>
-              <th class="has-text-warning" style="width:15%" title="Maximum amount of buildings to build. Triggers ignores this option, allowing to build above limit. Can be also used to limit amount of enabled buildings, with respective option above.">Max Build</th>
-              <th class="has-text-warning" style="width:15%" title="Script will try to spend 2x amount of resources on building having 2x weighting, and such.">Weighting</th>
-              <th class="has-text-warning" style="width:20%" title="First toggle enables basic automation based on priority, power, support, and consumption. Second enables logic made specially for particlular building, their effects are different, but generally it tries to behave smarter than just staying enabled all the time.">Auto Power</th>
+              <th class="has-text-warning" style="width:35%">建筑物</th>
+              <th class="has-text-warning" style="width:15%" title="开启自动建造。触发器无视此选项。">是否自动建造</th>
+              <th class="has-text-warning" style="width:15%" title="建造上限。触发器无视此选项。开启上方相应选项以后还可以用来限制供能的建筑数量。">建造上限</th>
+              <th class="has-text-warning" style="width:15%" title="权重越高，将优先使用越多资源来进行建造。">权重</th>
+              <th class="has-text-warning" style="width:20%" title="第一个开关会根据优先级，供能情况，支持，和消耗情况来控制供能。第二个开关可以更好地根据当前情况控制特定建筑的供能。">是否自动供能</th>
             </tr>
             <tbody id="script_buildingTableBody"></tbody>
           </table>`);
@@ -14752,7 +14868,7 @@
 
         // Build special "All Buildings" top row
         let buildingElement = $('#script_bldallToggle');
-        buildingElement.append('<span class="has-text-warning" style="margin-left: 20px;">All Buildings</span>');
+        buildingElement.append('<span class="has-text-warning" style="margin-left: 20px;">所有建筑物</span>');
 
         // enabled column
         buildingElement = buildingElement.next();
@@ -14763,7 +14879,7 @@
         buildingElement.append(buildAllBuildingStateSettingsToggle());
 
         $('#script_resetBuildingsPriority').on("click", function(){
-            if (confirm("Are you sure you wish to reset buildings priority?")) {
+            if (confirm("你确定要还原自动建筑优先级吗？")) {
                 initBuildingState();
                 for (let i = 0; i < BuildingManager.priorityList.length; i++) {
                     let id = BuildingManager.priorityList[i]._vueBinding;
@@ -14988,7 +15104,7 @@
 
     function buildProjectSettings() {
         let sectionId = "project";
-        let sectionName = "A.R.P.A.";
+        let sectionName = "ARPA";
 
         let resetFunction = function() {
             resetProjectSettings(true);
@@ -15007,16 +15123,16 @@
         let currentNode = $('#script_projectContent');
         currentNode.empty().off("*");
 
-        addSettingsToggle(currentNode, "arpaScaleWeighting", "Scale weighting with progress", "Projects weighting scales  with current progress, making script more eager to spend resources on finishing nearly constructed projects.");
-        addSettingsNumber(currentNode, "arpaStep", "Preferred progress step", "Projects will be weighted and build in this steps. Increasing number can speed up constructing. Step will be adjusted down when preferred step above remaining amount, or surpass storage caps. Weightings below will be multiplied by current step. Projects builded by triggers will always have maximum possible step.");
+        addSettingsToggle(currentNode, "arpaScaleWeighting", "进度权重", "随着项目接近完成而提高权重，使脚本更优先进行接近完成的项目。");
+        addSettingsNumber(currentNode, "arpaStep", "每次建造进度百分比", "每次建造时建造相应百分比的项目。触发器永远使用100%的百分比。");
 
         currentNode.append(`
           <table style="width:100%">
             <tr>
-              <th class="has-text-warning" style="width:25%">Project</th>
-              <th class="has-text-warning" style="width:25%">Auto Build</th>
-              <th class="has-text-warning" style="width:25%">Max Build</th>
-              <th class="has-text-warning" style="width:25%">Weighting</th>
+              <th class="has-text-warning" style="width:25%">项目</th>
+              <th class="has-text-warning" style="width:25%">是否自动建造</th>
+              <th class="has-text-warning" style="width:25%">建造上限</th>
+              <th class="has-text-warning" style="width:25%">权重</th>
             </tr>
             <tbody id="script_projectTableBody"></tbody>
           </table>`);
