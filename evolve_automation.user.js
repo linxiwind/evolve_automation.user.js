@@ -3,8 +3,8 @@
 // @namespace    http://tampermonkey.net/
 // @version      3.3.1.103
 // @description  try to take over the world!
-// @downloadURL  
-// @updateURL    
+// @downloadURL  https://github.com/linxiwind/evolve_automation.user.js/raw/main/evolve_automation.user.js
+// @updateURL    https://github.com/linxiwind/evolve_automation.user.js/raw/main/evolve_automation.user.js
 // @author       Fafnir
 // @author       TMVictor
 // @author       Vollch
