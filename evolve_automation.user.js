@@ -12385,7 +12385,7 @@
     }
 
     function buildConditionType(override, num, rebuild) {
-        let types = Object.entries(checkTypes).map(([id, type]) => `<option value="${id}" title="${type.desc}">${id.replace(/([A-Z])/g, ' $1').trim()}</option>`).join();
+        let types = Object.entries(checkTypes).map(([id, type]) => `<option value="${id}" title="${type.desc}">${type.title}</option>`).join();
         return $(`<select style="width: 100%">${types}</select>`)
         .val(override["type" + num])
         .on('change', function() {
