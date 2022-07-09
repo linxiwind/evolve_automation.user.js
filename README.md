@@ -4,7 +4,7 @@
 
 [点此安装](https://github.com/linxiwind/evolve_automation.user.js/raw/main/evolve_automation.user.js)
 
-脚本翻译自[Vollch's script](https://gist.github.com/Vollch/b1a5eec305558a48b7f4575d317d7dd1)
+脚本翻译自[Vollch's script](https://gist.github.com/Vollch/b1a5eec305558a48b7f4575d317d7dd1) , 汉化文本来自于[这里](https://gitee.com/by22dgb/evolvescript)，我只是个裱糊匠
 
 ### 脚本原说明
 
