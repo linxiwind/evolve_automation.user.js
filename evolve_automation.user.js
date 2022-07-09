@@ -8,7 +8,6 @@
 // @author       Fafnir
 // @author       TMVictor
 // @author       Vollch
-// @author       linxiwind
 // @match        https://pmotschmann.github.io/Evolve/
 // @grant        none
 // @require      https://code.jquery.com/jquery-3.6.0.min.js
