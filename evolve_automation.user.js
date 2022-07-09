@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Evolve
 // @namespace    http://tampermonkey.net/
-// @version      3.3.1.103
+// @version      3.3.1.104
 // @description  try to take over the world!
 // @downloadURL  https://github.com/linxiwind/evolve_automation.user.js/raw/main/evolve_automation.user.js
 // @updateURL    https://github.com/linxiwind/evolve_automation.user.js/raw/main/evolve_automation.user.js
@@ -15,7 +15,7 @@
 // @require      https://code.jquery.com/ui/1.12.1/jquery-ui.min.js
 // ==/UserScript==
 //
-// This script forked from Vollch's script version 3.3.1.102. Original script: https://gist.github.com/Vollch/b1a5eec305558a48b7f4575d317d7dd1
+// This script forked from Vollch's script. Original script: https://gist.github.com/Vollch/b1a5eec305558a48b7f4575d317d7dd1
 //
 // Most of script options have tooltips, explaining what they do, read them if you have a questions.
 //
@@ -412,7 +412,6 @@
             } else if (this.calculateRateOfChange({buy: false, all: true}) < 0) {
                 newWorkers = 1;
             }
-            this.incomeAdusted = newWorkers !== workersCount;
 
             return newWorkers;
         }
@@ -2480,19 +2479,19 @@
                       return "市民太少";
                   }
                   if (resources.Population.currentQuantity !== resources.Population.maxQuantity) {
-                    return "只在市民达到上限时献祭市民";
-                }
-                if (game.global.race['parasite'] && game.global.city.calendar.wind === 0) {
-                    return "拥有寄生虫特质的种族只在有风时献祭";
-                }
-                if (game.global.civic[game.global.civic.d_job].workers < 1) {
-                    return "默认工作没有可献祭的市民";
-                }
+                      return "只在市民达到上限时献祭市民";
+                  }
+                  if (game.global.race['parasite'] && game.global.city.calendar.wind === 0) {
+                      return "拥有寄生虫特质的种族只在有风时献祭";
+                  }
+                  if (game.global.civic[game.global.civic.d_job].workers < 1) {
+                      return "默认工作没有可献祭的市民";
+                  }
 
-                if (game.global.city.s_alter.rage >= 3600 && game.global.city.s_alter.regen >= 3600 &&
-                    game.global.city.s_alter.mind >= 3600 && game.global.city.s_alter.mine >= 3600 &&
-                    (!isLumberRace() || game.global.city.s_alter.harvest >= 3600)){
-                    return "献祭加成已经足够高了";
+                  if (game.global.city.s_alter.rage >= 3600 && game.global.city.s_alter.regen >= 3600 &&
+                      game.global.city.s_alter.mind >= 3600 && game.global.city.s_alter.mine >= 3600 &&
+                      (!isLumberRace() || game.global.city.s_alter.harvest >= 3600)){
+                      return "献祭加成已经足够高了";
                   }
               }
           },
@@ -9093,12 +9092,6 @@
                     if (building === buildings.CoalMine && jobs.CoalMiner.count === 0) {
                         maxStateOn = 0;
                     }
-                    if (building === buildings.GasMining && !resources.Helium_3.isUseful()) {
-                        maxStateOn = Math.min(maxStateOn, resources.Helium_3.getBusyWorkers("space_gas_mining_title", currentStateOn));
-                    }
-                    if (building === buildings.GasMoonOilExtractor  && !resources.Oil.isUseful()) {
-                        maxStateOn = Math.min(maxStateOn, resources.Oil.getBusyWorkers("space_gas_moon_oil_extractor_title", currentStateOn));
-                    }
                     // Enable cooling towers only if we can power at least two harbours
                     if (building === buildings.LakeCoolingTower && availablePower < (building.powered * maxStateOn + ((500 * 0.92 ** maxStateOn) * (game.global.race['emfield'] ? 1.5 : 1)).toFixed(2) * Math.min(2, buildings.LakeHarbour.count))) {
                         maxStateOn = 0;
@@ -9107,18 +9100,42 @@
                     if (building === buildings.LakeHarbour && maxStateOn === 1 && building.count > 1) {
                         maxStateOn = 0;
                     }
+                    if (building === buildings.GasMining && !resources.Helium_3.isUseful()) {
+                        maxStateOn = Math.min(maxStateOn, resources.Helium_3.getBusyWorkers("space_gas_mining_title", currentStateOn));
+                        if (maxStateOn !== currentStateOn) {
+                            resources.Helium_3.incomeAdusted = true;
+                        }
+                    }
+                    if (building === buildings.GasMoonOilExtractor  && !resources.Oil.isUseful()) {
+                        maxStateOn = Math.min(maxStateOn, resources.Oil.getBusyWorkers("space_gas_moon_oil_extractor_title", currentStateOn));
+                        if (maxStateOn !== currentStateOn) {
+                            resources.Oil.incomeAdusted = true;
+                        }
+                    }
                     // Kuiper Mines
                     if (building === buildings.KuiperOrichalcum && !resources.Orichalcum.isUseful()) {
                         maxStateOn = Math.min(maxStateOn, resources.Orichalcum.getBusyWorkers("space_kuiper_mine", currentStateOn, [resources.Orichalcum.title]));
+                        if (maxStateOn !== currentStateOn) {
+                            resources.Orichalcum.incomeAdusted = true;
+                        }
                     }
                     if (building === buildings.KuiperUranium && !resources.Uranium.isUseful()) {
                         maxStateOn = Math.min(maxStateOn, resources.Uranium.getBusyWorkers("space_kuiper_mine", currentStateOn, [resources.Uranium.title]));
+                        if (maxStateOn !== currentStateOn) {
+                            resources.Uranium.incomeAdusted = true;
+                        }
                     }
                     if (building === buildings.KuiperNeutronium && !resources.Neutronium.isUseful()) {
                         maxStateOn = Math.min(maxStateOn, resources.Neutronium.getBusyWorkers("space_kuiper_mine", currentStateOn, [resources.Neutronium.title]));
+                        if (maxStateOn !== currentStateOn) {
+                            resources.Neutronium.incomeAdusted = true;
+                        }
                     }
                     if (building === buildings.KuiperElerium && !resources.Elerium.isUseful()) {
                         maxStateOn = Math.min(maxStateOn, resources.Elerium.getBusyWorkers("space_kuiper_mine", currentStateOn, [resources.Elerium.title]));
+                        if (maxStateOn !== currentStateOn) {
+                            resources.Elerium.incomeAdusted = true;
+                        }
                     }
                 }
                 // Limit lander to sustainable amount
@@ -9161,6 +9178,9 @@
                 // Disable tourist center with full money
                 if (building === buildings.TouristCenter && !isHungryRace() && resources.Food.storageRatio < 0.7 && !resources.Money.isUseful()) {
                     maxStateOn = Math.min(maxStateOn, resources.Money.getBusyWorkers("tech_tourism", currentStateOn));
+                    if (maxStateOn !== currentStateOn) {
+                        resources.Money.incomeAdusted = true;
+                    }
                 }
                 // Disable mills with surplus energy
                 if (building === buildings.Mill && building.powered && resources.Food.storageRatio < 0.7 && (jobs.Farmer.count > 0 || jobs.Hunter.count > 0)) {
@@ -9201,12 +9221,21 @@
                 // Production buildings with capped resources
                 if (building === buildings.BeltEleriumShip && !resources.Elerium.isUseful()) {
                     maxStateOn = Math.min(maxStateOn, resources.Elerium.getBusyWorkers("job_space_miner", currentStateOn));
+                    if (maxStateOn !== currentStateOn) {
+                        resources.Elerium.incomeAdusted = true;
+                    }
                 }
                 if (building === buildings.BeltIridiumShip && !resources.Iridium.isUseful()) {
                     maxStateOn = Math.min(maxStateOn, resources.Iridium.getBusyWorkers("job_space_miner", currentStateOn));
+                    if (maxStateOn !== currentStateOn) {
+                        resources.Iridium.incomeAdusted = true;
+                    }
                 }
                 if (building === buildings.BeltIronShip && !resources.Iron.isUseful()) {
                     maxStateOn = Math.min(maxStateOn, resources.Iron.getBusyWorkers("job_space_miner", currentStateOn));
+                    if (maxStateOn !== currentStateOn) {
+                        resources.Iron.incomeAdusted = true;
+                    }
                 }
                 if (building === buildings.BologniumShip) {
                     if (buildings.GorddonMission.isAutoBuildable() && buildings.ScoutShip.count >= 2 && buildings.CorvetteShip.count >= 1) {
@@ -9215,15 +9244,26 @@
                     if (!resources.Bolognium.isUseful()) {
                         maxStateOn = Math.min(maxStateOn, resources.Bolognium.getBusyWorkers("galaxy_bolognium_ship", currentStateOn));
                     }
+                    if (maxStateOn !== currentStateOn) {
+                        resources.Bolognium.incomeAdusted = true;
+                    }
                 }
                 if (building === buildings.Alien1VitreloyPlant && !resources.Vitreloy.isUseful()) {
                     maxStateOn = Math.min(maxStateOn, resources.Vitreloy.getBusyWorkers("galaxy_vitreloy_plant_bd", currentStateOn));
+                    if (maxStateOn !== currentStateOn) {
+                        resources.Vitreloy.incomeAdusted = true;
+                    }
                 }
                 if (building === buildings.Alien2ArmedMiner && !resources.Bolognium.isUseful() && !resources.Adamantite.isUseful() && !resources.Iridium.isUseful()) {
                     let minShips = Math.max(resources.Bolognium.getBusyWorkers("galaxy_armed_miner_bd", currentStateOn),
                                             resources.Adamantite.getBusyWorkers("galaxy_armed_miner_bd", currentStateOn),
                                             resources.Iridium.getBusyWorkers("galaxy_armed_miner_bd", currentStateOn));
                     maxStateOn = Math.min(maxStateOn, minShips);
+                    if (maxStateOn !== currentStateOn) {
+                        resources.Bolognium.incomeAdusted = true;
+                        resources.Adamantite.incomeAdusted = true;
+                        resources.Iridium.incomeAdusted = true;
+                    }
                 }
                 if (building === buildings.ChthonianRaider && !resources.Vitreloy.isUseful() && !resources.Polymer.isUseful() && !resources.Neutronium.isUseful() && !resources.Deuterium.isUseful()) {
                     let minShips = Math.max(resources.Vitreloy.getBusyWorkers("galaxy_raider", currentStateOn),
@@ -9231,30 +9271,45 @@
                                             resources.Neutronium.getBusyWorkers("galaxy_raider", currentStateOn),
                                             resources.Deuterium.getBusyWorkers("galaxy_raider", currentStateOn));
                     maxStateOn = Math.min(maxStateOn, minShips);
+                    if (maxStateOn !== currentStateOn) {
+                        resources.Vitreloy.incomeAdusted = true;
+                        resources.Polymer.incomeAdusted = true;
+                        resources.Neutronium.incomeAdusted = true;
+                        resources.Deuterium.incomeAdusted = true;
+                    }
                 }
                 if (building === buildings.ChthonianExcavator && !resources.Orichalcum.isUseful()) {
                     maxStateOn = Math.min(maxStateOn, resources.Orichalcum.getBusyWorkers("galaxy_excavator", currentStateOn));
+                    if (maxStateOn !== currentStateOn) {
+                        resources.Orichalcum.incomeAdusted = true;
+                    }
                 }
                 if (building === buildings.EnceladusWaterFreighter && !resources.Water.isUseful()) {
                     maxStateOn = Math.min(maxStateOn, resources.Water.getBusyWorkers("space_water_freighter_title", currentStateOn));
+                    if (maxStateOn !== currentStateOn) {
+                        resources.Water.incomeAdusted = true;
+                    }
                 }
                 if (building === buildings.NebulaHarvester && !resources.Deuterium.isUseful() && !resources.Helium_3.isUseful()) {
                     let minShips = Math.max(resources.Deuterium.getBusyWorkers("interstellar_harvester_title", currentStateOn),
                                             resources.Helium_3.getBusyWorkers("interstellar_harvester_title", currentStateOn));
                     maxStateOn = Math.min(maxStateOn, minShips);
+                    if (maxStateOn !== currentStateOn) {
+                        resources.Deuterium.incomeAdusted = true;
+                        resources.Helium_3.incomeAdusted = true;
+                    }
                 }
             }
 
 
             for (let j = 0; j < building.consumption.length; j++) {
                 let resourceType = building.consumption[j];
-                if (!resourceType.resource.isUnlocked()) {
-                    maxStateOn = 0;
-                    break;
-                }
-
                 // If resource rate is negative then we are gaining resources. So, only check if we are consuming resources
                 if (resourceType.rate > 0) {
+                    if (!resourceType.resource.isUnlocked()) {
+                        maxStateOn = 0;
+                        break;
+                    }
 
                     if (resourceType.resource === resources.Food) {
                         // Wendigo doesn't store food. Let's assume it's always available.
@@ -15728,8 +15783,8 @@
         $("#createHead").after(`
           <div class="market-item vb" id="script_storage_top_row" style="overflow:hidden">
             <span style="margin-left: auto; margin-right: 0.2rem; float:right;">
-            <span class="has-text-warning" style="width: 2.75rem; margin-right: 0.3em; display: inline-block; text-align: center;">自动</span>
-            <span class="has-text-warning" style="width: 2.75rem; display: inline-block; text-align: center;">溢出</span>
+              <span class="has-text-warning" style="width: 2.75rem; margin-right: 0.3em; display: inline-block; text-align: center;">自动</span>
+              <span class="has-text-warning" style="width: 2.75rem; display: inline-block; text-align: center;">溢出</span>
             </span>
           </div>`);
 
