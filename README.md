@@ -11,7 +11,8 @@
 Most of script options have tooltips, explaining what they do, read them if you have a questions.
 
  Here's some tips about non-intuitive features:
-
+ 
+- Script tends to do a lot of clicks. It highly recommended to have key multipliers enabled, and bound to Shift\Control\Alt\Meta keys(in any combinations) for best performance.
 - Ctrl+Click on almost any script option brings up advanced configurations, which allows to overide setting under certain conditions and set more advanced logic.
 - Triggers, evolution queue, log filters, smart powering for interlinked buildings(like transport and bireme), priorities(draggables), and overrides itself - cannot be overridden.
 - Overrides affects only script behaviour, GUI(outside of overrides modal) always show and changes default values.
